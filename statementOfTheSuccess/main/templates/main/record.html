@@ -1,0 +1,56 @@
+{% extends 'main/base.html' %}{% load static %}
+{% block content %}
+<!---------------------------------- таблиця відомості успішності студентів ---------------------------------->
+<div class="table">
+  <div class="table__head">
+    <div>№<br />Відомості</div>
+    <div>Дата</div>
+    <div>Группа</div>
+    <div>Загальна кількість годин</div>
+    <div>Дисципліна</div>
+    <div>Викладач</div>
+  </div>
+  <div class="table__body">
+    {% for record in records %}
+    <div class="table__row">
+      <div class="table__check"></div>
+      <div class="table__component">
+        <div>{{ record.get_record_number }}</div>
+        <div>{{ record.date }}</div>
+        <div>К-301</div>
+        <div>{{ record.total_hours }}</div>
+        <div title="{{ record.discipline }}">
+          {{ record.discipline }}
+        </div>
+        <div>{{ record.teacher.get_short_name }}</div>
+      </div>
+      <div class="table__edit">
+        <img src="{% static 'main/img/edit.svg' %}" alt="edit" /><img src="{% static 'main/img/delete.svg' %}" alt="delete" />
+      </div>
+    </div>
+    {% endfor %}
+    <div class="table__row">
+      <div class="table__component modify">
+        <div>
+          <input type="text" placeholder="№" />
+        </div>
+        <div><input type="text" placeholder="Дата" /></div>
+        <div><input type="text" placeholder="Группа" /></div>
+        <div><input type="text" placeholder="Години" /></div>
+        <div><input type="text" placeholder="Дисципліна" /></div>
+        <div><input type="text" placeholder="Викладач" /></div>
+      </div>
+      <div class="table__edit">
+        <img src="{% static 'main/img/eye.svg' %}" alt="edit" />
+      </div>
+    </div>
+    <button class="table__add button">+</button>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+

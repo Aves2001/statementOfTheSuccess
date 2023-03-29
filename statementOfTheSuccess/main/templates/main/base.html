@@ -1,0 +1,49 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{% static 'main/css/style.min.css' %}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600&display=swap&_v=20230324162035"
+    rel="stylesheet" />
+  <title>{{ title }}</title>
+</head>
+
+  <body>
+    <div class="wrapper">
+      <!---------------------------------- меню ---------------------------------->
+<header class="header">
+  <div class="header__conteiner conteiner">
+    <div class="header__logo"><picture><source srcset="{% static 'main/img/logo.webp' %}" type="image/webp"><img src="{% static 'main/img/logo.png' %}" alt="logo" /></picture></div>
+    <div class="header__body">
+      <div class="header__top"><picture><source srcset="{% static 'main/img/headerText.webp' %}" type="image/webp"><img src="{% static 'main/img/headerText.png' %}" alt="text" /></picture></div>
+      <div class="header__bottom">
+        <nav class="header__menu">
+          <ul class="header__list">
+            <li>перегляд відомостей</li>
+            <li>додати нову відомість</li>
+            <li>профіль</li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>
+      {% block content %}
+      {% endblock %}
+      <footer class="footer">
+  <div class="footer__conteiner conteiner">
+    <div class="footer__text">Всі права захищені © 2023 ПВНЗ "Буковинський університет"</div>
+  </div>
+</footer>
+
+    </div>
+    <script src="{% static 'main/js/app.min.js' %}"></script>
+  </body>
+</html>
