@@ -129,4 +129,6 @@ dmypy.json
 .pyre/
 
 .idea
-statementOfTheSuccess/*.db
+*.db
+statementOfTheSuccess/main/migrations
+*.bat
