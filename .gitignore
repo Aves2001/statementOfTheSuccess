@@ -130,5 +130,5 @@ dmypy.json
 
 .idea
 *.db
-statementOfTheSuccess/main/migrations
+statementOfTheSuccess/main/migrations/
 *.bat
