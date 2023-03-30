@@ -2,7 +2,7 @@
 # Statement Of The Success
 
 
-## Authors
+## Автори
 
 - [@Aves2001](https://www.github.com/Aves2001)
 - [@SashaBenzar](https://www.github.com/SashaBenzar)
@@ -11,46 +11,51 @@
 
 ## Як запустити сайт
 
-Клонуйте проект
+Клонуйте проект:
 
 ```bash
-  git clone https://github.com/Aves2001/statementOfTheSuccess.git
+git clone https://github.com/Aves2001/statementOfTheSuccess.git
 ```
 
-Перейдіть до каталогу проекту
+Перейдіть до каталогу проекту:
 
 ```bash
-  cd statementOfTheSuccess
+cd statementOfTheSuccess
 ```
 
-Створіть віртуальний простір
+Створіть віртуальний простір:
 
 ```bash
-  python -m venv venv
+python -m venv venv
 ```
 
-Установіть залежності
+Установіть залежності:
 
 ```bash
-  cmd /k "cd venv\Scripts & activate & cd /d ../../ & pip install -r requirements.txt"
+cmd /k "cd venv\Scripts & activate & cd /d ../../ & pip install -r requirements.txt"
 ```
 
-Створіть .env файл, з допомогою мишки, або команди
+Створіть .env файл, з допомогою мишки, або команди:
 ```bash
-  nul> statementOfTheSuccess/.env
+nul> statementOfTheSuccess/.env
 ```
 Формат файлу можна зрозуміти з прикладу:
 
 ```bash
 DEBUG=on
 SECRET_KEY=ваш-секретний-ключ
-
 ```
 
-Запустіть сервер
+Створіть суперкористувача:
+```bash
+python statementOfTheSuccess/manage.py createsuperuser
+```
+
+
+Запустіть сервер:
 
 ```bash
-  cmd /k "cd venv\Scripts & activate & cd /d ../../statementOfTheSuccess & python manage.py runserver"
+cmd /k "cd venv\Scripts & activate & cd /d ../../statementOfTheSuccess & python manage.py runserver"
 ```
  
 
