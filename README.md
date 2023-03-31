@@ -13,42 +13,41 @@
 
 ### 1. Клонуйте проект:
 
-```bash
+```cmd
 git clone https://github.com/Aves2001/statementOfTheSuccess.git
 ```
 
 ### 2. Перейдіть до каталогу проекту:
 
-```bash
+```cmd
 cd statementOfTheSuccess
 ```
 
 ### 3. Створіть віртуальний простір:
 
-```bash
+```cmd
 python -m venv venv
 ```
 
 ### 4. Актиуйте віртуальний простір:
-```bash
-cmd /k "cd venv\Scripts & activate"
+```cmd
+cmd /k "cd venv\Scripts & activate & cd ../../"
 ```
 
 ### 5. Установіть залежності:
 
-```bash
-cd ../../
+```cmd
 pip install -r requirements.txt
 ```
 
 ### 6. Перейдіть в каталог з файлом manage.py:
 
-```bash
+```cmd
 cd statementOfTheSuccess
 ```
 
 ### 7. Створіть .env файл, в каталозі з файлом manage.py, з допомогою мишки, або команди:
-```bash
+```cmd
 copy con .env
 ```
 *Примітка: щоб зберігти файл, при використанні **copy con** необхідно виконати наступні дії:*
@@ -57,7 +56,7 @@ copy con .env
 - **ENTER**
 
 ### 8. Формат файлу можна зрозуміти з прикладу:
-```bash
+```cmd
 DEBUG=on
 SECRET_KEY=ваш-секретний-ключ
 ```
@@ -68,16 +67,21 @@ SECRET_KEY=ваш-секретний-ключ
 
 Приклад: ```SECRET_KEY=fe^(*%vy3#^isj(@^ao+mbcbd_21^!69hs_m!^6z&io1vtg11x```
 
-
 ### 9. Виконайте міграції:
 
-```bash
+```cmd
 manage.py makemigrations
 manage.py migrate
 ```
 
-### 10. Запустіть сервер:
+### 10. Створіть супер-користувача:
 
-```bash
+```cmd
+manage.py createsuperuser
+```
+
+### 11. Запустіть сервер:
+
+```cmd
 manage.py runserver
 ```
