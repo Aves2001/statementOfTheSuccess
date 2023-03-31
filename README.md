@@ -37,13 +37,14 @@ cmd /k "cd venv\Scripts & activate"
 ### 5. Установіть залежності:
 
 ```bash
+cd ../../
 pip install -r requirements.txt
 ```
 
 ### 6. Перейдіть в каталог з файлом manage.py:
 
 ```bash
-cd ../../statementOfTheSuccess
+cd statementOfTheSuccess
 ```
 
 ### 7. Створіть .env файл, в каталозі з файлом manage.py, з допомогою мишки, або команди:
@@ -80,5 +81,3 @@ manage.py migrate
 ```bash
 manage.py runserver
 ```
- 
-
