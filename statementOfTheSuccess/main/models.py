@@ -3,10 +3,11 @@ from django.contrib.auth.models import PermissionsMixin
 from django.core.mail import send_mail
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from .managers import UserManager
-from .services import current_year, max_value_current_year, current_today
+from .services import current_year, max_value_current_year
 
 
 class Faculty(models.Model):
@@ -202,7 +203,7 @@ class Record(models.Model):
                                                 verbose_name="Номер відомості")
     date = models.DateField(null=False,
                             blank=False,
-                            default=current_today(),
+                            default=timezone.now,
                             verbose_name="Дата")
     year = models.PositiveSmallIntegerField(null=False, blank=False,
                                             default=current_year(),
