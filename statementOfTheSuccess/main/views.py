@@ -4,13 +4,7 @@ from .models import Record, Grade
 
 
 def index(request):
-    print(request)
-    record_number = Record.objects.first()
-    data = {
-        'title': "Головна сторінка",
-        'record_number': record_number.get_record_number
-    }
-    return render(request, 'main/index.html', data)
+    return render(request, 'main/index.html')
 
 
 class RecordList(ListView):

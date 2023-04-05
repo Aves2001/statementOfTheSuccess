@@ -1,18 +1,37 @@
 from django.contrib import admin
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.admin import UserAdmin
 from import_export.admin import ImportExportModelAdmin
-
-from .forms import TeacherCreationForm, TeacherChangeForm
-from .models import Faculty, Speciality, Group, Student, Teacher, GroupStudent, Discipline, Grade, Record,\
+from django.db import models
+from .forms import TeacherCreationForm, TeacherChangeForm, GroupAdminForm
+from .models import Faculty, Speciality, Group, Student, Teacher, GroupStudent, Discipline, Grade, Record, \
     SemesterControlForm
 
 
-class StudentAdmin(admin.ModelAdmin):
-    list_display = ('last_name', 'first_name', 'middle_name', 'admission_year')
+class SpecialityInline(admin.TabularInline):
+    model = Speciality
+
+
+@admin.register(Faculty)
+class FacultyAdmin(ImportExportModelAdmin):
+    model = Faculty
+    inlines = [SpecialityInline]
+
+
+@admin.register(Speciality)
+class SpecialityAdmin(ImportExportModelAdmin):
+    list_display = ('name', 'faculty')
+    form = GroupAdminForm
+
+
+@admin.register(Student)
+class StudentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('number_of_the_scorebook', 'last_name', 'first_name', 'middle_name', 'admission_year')
+    model = Student
 
 
 @admin.register(Teacher)
-class TeacherAdmin(UserAdmin, ImportExportModelAdmin):
+class TeacherAdmin(ImportExportModelAdmin, UserAdmin):
     add_form = TeacherCreationForm
     form = TeacherChangeForm
     model = Teacher
@@ -34,16 +53,26 @@ class TeacherAdmin(UserAdmin, ImportExportModelAdmin):
          ),
     )
     search_fields = ('email', 'last_name')
-    ordering = ('email',)
+    ordering = ('last_name',)
 
 
-admin.site.register(Faculty)
-admin.site.register(Speciality)
-admin.site.register(Group)
-admin.site.register(Student, StudentAdmin)
-admin.site.register(GroupStudent)
-admin.site.register(Discipline)
-admin.site.register(Grade)
-admin.site.register(Record)
-admin.site.register(SemesterControlForm)
+@admin.register(Group)
+class GroupAdmin(ImportExportModelAdmin):
+    list_display = ('get_name_group', 'course', 'start_year', 'end_year', 'speciality')
+    list_filter = ('group_letter', 'number_group', 'course', 'start_year', 'end_year', 'speciality')
+    search_fields = ('get_name_group',)
+    ordering = ('group_letter', 'number_group')
 
+
+@admin.register(Record)
+class RecordAdmin(ImportExportModelAdmin):
+    list_display = ('get_record_number', 'date', 'discipline', 'semester', 'total_hours', 'teacher', 'is_closed')
+    fieldsets = (
+        (None, {'fields': ('record_number', 'date', 'year', 'discipline', 'semester', 'total_hours', 'teacher')}),
+    )
+
+
+admin.site.register(GroupStudent, ImportExportModelAdmin)
+admin.site.register(Discipline, ImportExportModelAdmin)
+admin.site.register(Grade, ImportExportModelAdmin)
+admin.site.register(SemesterControlForm, ImportExportModelAdmin)
