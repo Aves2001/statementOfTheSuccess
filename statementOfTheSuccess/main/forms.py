@@ -35,15 +35,11 @@ class GroupAdminForm(ModelForm):
 
     def save_m2m(self):
         pass
-    #     # if self.instance.pk:
-    #     #     self.cleaned_data['group'].update(speciality=None)
-    #     #     self.fields['group'].initial.update(speciality=None)
 
-    #
     def save(self, *args, **kwargs):
         instance = super(GroupAdminForm, self).save()
 
-        if self.instance.pk:
+        if self.instance.pk and self.fields['speciality'].initial is not None:
             self.fields['speciality'].initial.update(speciality=instance.pk)
             self.cleaned_data['speciality'].update(speciality=instance.pk)
 
