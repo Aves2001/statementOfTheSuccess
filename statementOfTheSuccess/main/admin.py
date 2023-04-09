@@ -1,11 +1,12 @@
 from django.contrib import admin
-from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.contrib.admin import ModelAdmin
 from django.contrib.auth.admin import UserAdmin
 from import_export.admin import ImportExportModelAdmin
-from django.db import models
+
 from .forms import TeacherCreationForm, TeacherChangeForm, GroupAdminForm
 from .models import Faculty, Speciality, Group, Student, Teacher, GroupStudent, Discipline, Grade, Record, \
     SemesterControlForm
+from .resources import StudentResource
 
 
 class SpecialityInline(admin.TabularInline):
@@ -19,15 +20,9 @@ class FacultyAdmin(ImportExportModelAdmin):
 
 
 @admin.register(Speciality)
-class SpecialityAdmin(ImportExportModelAdmin):
+class SpecialityAdmin(ModelAdmin):
     list_display = ('name', 'faculty')
     form = GroupAdminForm
-
-
-@admin.register(Student)
-class StudentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('number_of_the_scorebook', 'last_name', 'first_name', 'middle_name', 'admission_year')
-    model = Student
 
 
 @admin.register(Teacher)
@@ -66,9 +61,9 @@ class GroupAdmin(ImportExportModelAdmin):
 
 @admin.register(Record)
 class RecordAdmin(ImportExportModelAdmin):
-    list_display = ('get_record_number', 'date', 'discipline', 'semester', 'total_hours', 'teacher', 'is_closed')
+    list_display = ('get_record_number', 'group', 'date', 'discipline', 'semester', 'total_hours', 'teacher', 'is_closed')
     fieldsets = (
-        (None, {'fields': ('record_number', 'date', 'year', 'discipline', 'semester', 'total_hours', 'teacher')}),
+        (None, {'fields': ('record_number', 'group', 'date', 'year', 'discipline', 'semester', 'total_hours', 'teacher')}),
     )
 
 
@@ -76,3 +71,10 @@ admin.site.register(GroupStudent, ImportExportModelAdmin)
 admin.site.register(Discipline, ImportExportModelAdmin)
 admin.site.register(Grade, ImportExportModelAdmin)
 admin.site.register(SemesterControlForm, ImportExportModelAdmin)
+
+
+@admin.register(Student)
+class StudentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('number_of_the_scorebook', 'last_name', 'first_name', 'middle_name', 'admission_year')
+    model = Student
+    resource_classes = [StudentResource]
