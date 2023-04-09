@@ -3,6 +3,7 @@ from django.contrib.auth.models import PermissionsMixin
 from django.core.mail import send_mail
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -61,6 +62,9 @@ class Group(models.Model):
     class Meta:
         verbose_name = 'Група'
         verbose_name_plural = 'Групи'
+        constraints = [
+            models.UniqueConstraint(fields=['group_letter', 'number_group'], name='unique group')
+        ]
 
     def __str__(self):
         return f"{self.group_letter}-{self.number_group} | [{self.start_year}-{self.end_year}]"
@@ -81,10 +85,10 @@ class BaseUser(models.Model):
 
 
 class Student(BaseUser):
-    number_of_the_scorebook = models.BigAutoField(auto_created=True,
-                                                  primary_key=True,
-                                                  serialize=False,
-                                                  verbose_name='Номер залікової книжки')
+    number_of_the_scorebook = models.PositiveIntegerField(unique=True,
+                                                          null=False,
+                                                          blank=False,
+                                                          verbose_name='Номер залікової книжки')
     admission_year = models.PositiveSmallIntegerField(null=True,
                                                       blank=True,
                                                       validators=[MinValueValidator(1995), max_value_current_year],
@@ -150,9 +154,6 @@ class Teacher(AbstractBaseUser, PermissionsMixin, BaseUser):
 
 class SemesterControlForm(models.Model):
     semester_control_form = models.CharField(max_length=50,
-                                             auto_created=True,
-                                             primary_key=True,
-                                             serialize=False,
                                              verbose_name="Форма семестрового контролю")
 
     class Meta:
@@ -165,9 +166,6 @@ class SemesterControlForm(models.Model):
 
 class Discipline(models.Model):
     name = models.CharField(max_length=150,
-                            auto_created=True,
-                            primary_key=True,
-                            serialize=False,
                             verbose_name="Дисципліна")
     semester_control_form = models.ForeignKey(SemesterControlForm,
                                               null=True,
@@ -201,6 +199,7 @@ class Record(models.Model):
                                                 default=add_record_number,
                                                 validators=[MinValueValidator(1)],
                                                 verbose_name="Номер відомості")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name="Група")
     date = models.DateField(null=False,
                             blank=False,
                             default=timezone.now,
@@ -224,6 +223,9 @@ class Record(models.Model):
 
     def get_record_number(self):
         return f"{str(self.year)[-2:]}/{self.record_number}"
+
+    def get_absolute_url(self):
+        return reverse('record-detail', kwargs={'pk': self.pk})
 
     def __str__(self):
         record_number = self.get_record_number()
