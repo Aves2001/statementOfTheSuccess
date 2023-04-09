@@ -1,0 +1,25 @@
+{% block header %}{% load static %}
+<!---------------------------------- меню ---------------------------------->
+<header class="header">
+  <div class="header__conteiner conteiner">
+    <div class="header__logo"><img src="{% static 'main/img/logo.png' %}" alt="logo" />
+      <!-- <div class="header__burger">
+        <img src="@img/menu.png"/>
+      </div> -->
+    </div>
+    <div class="header__body">
+      <div class="header__top"><img src="{% static 'main/img/headerText.png' %}" alt="text" />
+      </div>
+      <div class="header__bottom">
+        <nav class="header__menu">
+          <ul class="header__list">
+            <li><a href="{% url 'record' %}">перегляд відомостей</a></li>
+            <li hidden ><a href="{% url 'add-record' %}">додати нову відомість</a></li>
+            <li><a href="{% url 'profile' %}">профіль</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>
+{% endblock header %}

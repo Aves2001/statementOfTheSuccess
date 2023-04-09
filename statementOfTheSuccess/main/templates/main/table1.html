@@ -1,0 +1,48 @@
+{% load static %}
+<!---------------------------------- таблиця відомості успішності студентів ---------------------------------->
+<div class="table">
+  <div class="table__head">
+    <div>№<br />Відомості</div>
+    <div>Дата</div>
+    <div>Группа</div>
+    <div>Загальна кількість годин</div>
+    <div>Дисципліна</div>
+    <div>Викладач</div>
+  </div>
+  {% for r in record %}
+  <div class="table__body">
+    <div class="table__row">
+      <div class="table__check"></div>
+      <div class="table__component">
+        <div>{{ r.get_record_number }}</div>
+        <div>{{ r.date }}</div>
+        <div>К-301</div>
+        <div>{{ r.total_hours }}</div>
+        <div title="{{ r.discipline }}">
+          {{ r.discipline }}
+        </div>
+        <div>{{ r.teacher.get_short_name }}</div>
+      </div>
+      <div class="table__edit">
+        <a href="{{ r.get_absolute_url }}"><img src="{% static 'main/img/eye.svg' %}" alt="edit"/></a>
+      </div>
+    </div>
+<!--    <div class="table__row">-->
+<!--      <div class="table__component modify">-->
+<!--        <div>-->
+<!--          <input type="text" placeholder="№" />-->
+<!--        </div>-->
+<!--        <div><input type="text" placeholder="Дата" /></div>-->
+<!--        <div><input type="text" placeholder="Группа" /></div>-->
+<!--        <div><input type="text" placeholder="Години" /></div>-->
+<!--        <div><input type="text" placeholder="Дисципліна" /></div>-->
+<!--        <div><input type="text" placeholder="Викладач" /></div>-->
+<!--      </div>-->
+<!--      <div class="table__edit">-->
+<!--        <img src="{% static 'main/img/eye.svg' %}" alt="edit" />-->
+<!--      </div>-->
+<!--    </div>-->
+<!--    <button class="table__add button">+</button>-->
+  </div>
+  {% endfor %}
+</div>
