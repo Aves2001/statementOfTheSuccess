@@ -109,6 +109,9 @@ class GroupStudent(models.Model):
     class Meta:
         verbose_name = verbose_name_plural = 'Групи-Студенти'
 
+    def get_student(self):
+        return self.student
+
     def __str__(self):
         return f"{self.group} --> {self.student}"
 
@@ -154,6 +157,7 @@ class Teacher(AbstractBaseUser, PermissionsMixin, BaseUser):
 
 class SemesterControlForm(models.Model):
     semester_control_form = models.CharField(max_length=50,
+                                             unique=True,
                                              verbose_name="Форма семестрового контролю")
 
     class Meta:
@@ -237,6 +241,8 @@ class Record(models.Model):
 class Grade(models.Model):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, verbose_name="Відомість")
     group_student = models.ForeignKey(GroupStudent, on_delete=models.CASCADE, verbose_name="Студент")
+    individual_study_plan_number = models.PositiveIntegerField(null=True, blank=True,
+                                                               verbose_name="Номер індивідуального навчального плану")
     grade = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)],
                                              verbose_name="Оцінка")
     grade_date = models.DateField(verbose_name="Дата виставлення оцінки")
