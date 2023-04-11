@@ -36,7 +36,7 @@ class TeacherAdmin(ImportExportModelAdmin, UserAdmin):
     list_filter = ('faculty', 'is_staff', 'is_active',)
     fieldsets = (
         (None, {'fields': ('email', 'password', 'last_name', 'first_name', 'middle_name',
-                           'academic_status', 'faculty')}),
+                           'academic_status', 'faculty', 'groups')}),
         ('Permissions', {'fields': ('is_staff', 'is_active')}),
     )
     add_fieldsets = (
@@ -61,9 +61,11 @@ class GroupAdmin(ImportExportModelAdmin):
 
 @admin.register(Record)
 class RecordAdmin(ImportExportModelAdmin):
-    list_display = ('get_record_number', 'group', 'date', 'discipline', 'semester', 'total_hours', 'teacher', 'is_closed')
+    list_display = ('get_record_number', 'group', 'date', 'discipline',
+                    'semester', 'total_hours', 'teacher', 'is_closed')
     fieldsets = (
-        (None, {'fields': ('record_number', 'group', 'date', 'year', 'discipline', 'semester', 'total_hours', 'teacher')}),
+        (None, {'fields': ('record_number', 'group', 'date', 'year', 'discipline',
+                           'semester', 'total_hours', 'teacher')}),
     )
 
 
