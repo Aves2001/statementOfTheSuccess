@@ -1,7 +1,7 @@
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django import forms
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
 from django.forms import ModelForm, ModelMultipleChoiceField
-
 from .models import Teacher, Group
 
 
@@ -48,3 +48,18 @@ class GroupAdminForm(ModelForm):
                 self.fields['speciality'].initial.filter(id=i.id).update(speciality=None)
         self.save_m2m()
         return instance
+
+
+class UserLoginForm(AuthenticationForm):
+    username = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'account__input',
+                                                               'type': "email",
+                                                               'placeholder': 'Введіть свою почту'
+                                                               }))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'account__input',
+                                                                 'type': "password",
+                                                                 'placeholder': 'Введіть пароль',
+                                                                 }))
+
+    class Meta:
+        model = Teacher
+        fields = ['username', 'password']
