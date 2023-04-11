@@ -2,7 +2,7 @@
 <!---------------------------------- меню ---------------------------------->
 <header class="header">
   <div class="header__conteiner conteiner">
-    <div class="header__logo"><img src="{% static 'main/img/logo.png' %}" alt="logo" />
+    <div class="header__logo"><a href="{% url 'home' %}"><img src="{% static 'main/img/logo.png' %}" alt="logo" /></a>
       <!-- <div class="header__burger">
         <img src="@img/menu.png"/>
       </div> -->
@@ -13,9 +13,14 @@
       <div class="header__bottom">
         <nav class="header__menu">
           <ul class="header__list">
-            <li><a href="{% url 'record' %}">перегляд відомостей</a></li>
-            <li hidden ><a href="{% url 'add-record' %}">додати нову відомість</a></li>
-            <li><a href="{% url 'profile' %}">профіль</a></li>
+            {% if user.is_authenticated %}
+            	<li><a href="{% url 'record' %}">перегляд відомостей</a></li>
+                <li hidden ><a href="{% url 'add-record' %}">додати нову відомість</a></li>
+                <li><a href="{% url 'profile' %}">профіль</a></li>
+                <li><a href="{% url 'logout' %}">Вийти</a></li>
+          	{% else %}
+                <li><a href="{% url 'login' %}">Увійти</a></li>
+          	{% endif %}
           </ul>
         </nav>
       </div>

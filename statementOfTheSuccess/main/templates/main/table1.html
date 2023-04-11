@@ -16,7 +16,7 @@
       <div class="table__component">
         <div>{{ r.get_record_number }}</div>
         <div>{{ r.date }}</div>
-        <div>К-301</div>
+        <div>{{ r.group.get_name_group }}</div>
         <div>{{ r.total_hours }}</div>
         <div title="{{ r.discipline }}">
           {{ r.discipline }}

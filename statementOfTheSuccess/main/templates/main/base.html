@@ -3,9 +3,14 @@
 {% include "main/head.html" %}
   <body>
     <div class="wrapper">
-      {% include "main/header.html" %}
-      <main class="main">{% block main %}{% include "main/main.html" %}{% endblock main %}</main>
-      {% include "main/footer.html" %}
+        {% include "main/header.html" %}
+        <main class="main">
+            <section class="profile section">
+                <div class="profile__title title">{{title}}</div>
+                {% block section %}{% endblock section %}
+            </section>
+        </main>
+        {% include "main/footer.html" %}
     </div>
     <script src="{% static 'main/js/app.min.js' %}"></script>
   </body>

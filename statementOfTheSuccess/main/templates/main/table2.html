@@ -14,15 +14,41 @@
     {% for g in grade %}
     <div class="table__row">
       <div class="table__component modify">
-        <div>1.</div>
-<!--        <div>{{ g.group_student }}</div>-->
-        <div>NaN</div>
+        <div>{{ forloop.counter }}.</div>
+        <div>{{ g.group_student.get_student }}</div>
+        <div>{{ g.individual_study_plan_number }}</div>
           <div class="table__sub">
+            {% if g.grade >= 90 and g.grade <= 100 %}
             <div>5</div>
-            <div>95</div>
+            <div>{{ g.grade }}</div>
             <div>A</div>
+            {% elif g.grade >= 82 and g.grade <= 89 %}
+            <div>4</div>
+            <div>{{ g.grade }}</div>
+            <div>B</div>
+            {% elif g.grade >= 74 and g.grade <= 81 %}
+            <div>4</div>
+            <div>{{ g.grade }}</div>
+            <div>C</div>
+            {% elif g.grade >= 64 and g.grade <= 73 %}
+            <div>3</div>
+            <div>{{ g.grade }}</div>
+            <div>D</div>
+            {% elif g.grade >= 60 and g.grade <= 63 %}
+            <div>3</div>
+            <div>{{ g.grade }}</div>
+            <div>E</div>
+            {% elif g.grade >= 35 and g.grade <= 59 %}
+            <div>2</div>
+            <div>{{ g.grade }}</div>
+            <div>FX</div>
+            {% elif g.grade >= 1 and g.grade <= 34 %}
+            <div>2</div>
+            <div>{{ g.grade }}</div>
+            <div>F</div>
+            {% endif %}
           </div>
-        <div>05.07.23</div>
+        <div>{{ g.grade_date }}</div>
       </div>
       <div class="table__edit">
         <img src="{% static 'main/img/edit.svg' %}" alt="edit" /><img src="{% static 'main/img/delete.svg' %}" alt="delete" />

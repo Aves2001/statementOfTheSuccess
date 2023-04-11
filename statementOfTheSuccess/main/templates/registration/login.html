@@ -1,0 +1,25 @@
+{% extends 'main/base.html' %}
+{% block section %}
+<div class="document__text3">
+    {% if form.non_field_errors %}
+    {% for err in form.non_field_errors %}
+      <p class="document__text3">{{ err }}</p>
+    {% endfor %}
+{% endif %}
+</div>
+<div class="account">
+    <div class="account__title">Вхід</div>
+    <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+        <div>
+            <div>
+                {{ field.errors }}
+            </div>
+            {{ field }}
+        </div>
+    {% endfor %}
+        <button type="submit" class="account__button">Увійти</button>
+    </form>
+</div>
+{% endblock section %}
