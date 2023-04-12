@@ -1,12 +1,24 @@
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin
 from django.contrib.auth.admin import UserAdmin
-from import_export.admin import ImportExportModelAdmin
+from import_export.admin import ImportExportMixin
+from import_export.formats import base_formats
 
 from .forms import TeacherCreationForm, TeacherChangeForm, GroupAdminForm
 from .models import Faculty, Speciality, Group, Student, Teacher, GroupStudent, Discipline, Grade, Record, \
     SemesterControlForm
 from .resources import StudentResource
+
+DEFAULT_FORMATS = [fmt for fmt in (
+    base_formats.XLSX,
+) if fmt.is_available()]
+
+
+class ImportExportModelAdmin(ImportExportMixin, admin.ModelAdmin):
+    formats = DEFAULT_FORMATS
+
+    class Meta:
+        abstract = True
 
 
 class SpecialityInline(admin.TabularInline):
