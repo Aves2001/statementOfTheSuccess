@@ -2,7 +2,7 @@
 {% block section %}
 <div class="account">
     <div class="account__title">Вхід</div>
-    <form method="post">
+    <form class="account__form" method="post">
         {% csrf_token %}
         {% for field in form %}
             <div>
