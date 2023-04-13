@@ -132,3 +132,4 @@ dmypy.json
 *.db
 statementOfTheSuccess/main/migrations/
 *.bat
+!/.run/
