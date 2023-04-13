@@ -1,13 +1,14 @@
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin
 from django.contrib.auth.admin import UserAdmin
+from django.utils.timezone import now
 from import_export.admin import ImportExportMixin
 from import_export.formats import base_formats
 
 from .forms import TeacherCreationForm, TeacherChangeForm, GroupAdminForm
 from .models import Faculty, Speciality, Group, Student, Teacher, GroupStudent, Discipline, Grade, Record, \
     SemesterControlForm
-from .resources import StudentResource
+from .resources import StudentResource, DisciplineResource, TeacherResource
 
 DEFAULT_FORMATS = [fmt for fmt in (
     base_formats.XLSX,
@@ -42,7 +43,7 @@ class TeacherAdmin(ImportExportModelAdmin, UserAdmin):
     add_form = TeacherCreationForm
     form = TeacherChangeForm
     model = Teacher
-
+    resource_classes = [TeacherResource]
     list_display = ('email', 'last_name', 'first_name', 'middle_name', 'academic_status', 'faculty',
                     'is_staff', 'is_active',)
     list_filter = ('faculty', 'is_staff', 'is_active',)
@@ -82,13 +83,24 @@ class RecordAdmin(ImportExportModelAdmin):
 
 
 admin.site.register(GroupStudent, ImportExportModelAdmin)
-admin.site.register(Discipline, ImportExportModelAdmin)
 admin.site.register(Grade, ImportExportModelAdmin)
 admin.site.register(SemesterControlForm, ImportExportModelAdmin)
+
+
+@admin.register(Discipline)
+class DisciplineAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('name', 'teacher', 'semester_control_form')
+    list_filter = ('teacher', 'semester_control_form')
+    search_fields = ('teacher__last_name', 'name')
+    model = Discipline
+    resource_classes = [DisciplineResource]
 
 
 @admin.register(Student)
 class StudentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('number_of_the_scorebook', 'last_name', 'first_name', 'middle_name', 'admission_year')
+    list_filter = ('admission_year', )
+    search_fields = ('last_name', 'first_name')
+    ordering = ('number_of_the_scorebook', )
     model = Student
     resource_classes = [StudentResource]
