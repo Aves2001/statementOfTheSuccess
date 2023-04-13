@@ -738,6 +738,12 @@ table {
   color: red;
   text-align: center;
 }
+
+account__form{
+    display: flex;
+    flex-direction: column;
+}
+
 .account__input {
   padding: 14px 10px;
   min-width: 300px;

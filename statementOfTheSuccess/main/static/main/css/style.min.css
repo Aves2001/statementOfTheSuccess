@@ -723,6 +723,12 @@ table {
     padding: 12px 20px;
   }
 }
+
+.account__form{
+    display: flex;
+    flex-direction: column;
+}
+
 .account__title {
   margin: 0 0 8px 0;
   font-style: normal;
