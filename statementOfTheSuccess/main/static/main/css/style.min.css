@@ -727,6 +727,7 @@ table {
 .account__form{
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 .account__title {
@@ -778,6 +779,7 @@ table {
   font-variant: small-caps;
   border: 0;
   color: #ffffff;
+  width: 100px;
 }
 .account__button:active {
   transform: translateY(2px);
