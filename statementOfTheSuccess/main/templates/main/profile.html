@@ -1,11 +1,18 @@
 {% extends 'main/base.html' %}
+{% block section %}
 <div class="account">
+  <form class="account__form" method="post">{% csrf_token %}
   <div class="account__title">Профіль</div>
-  <input class="account__input" type="text" placeholder="Прізвище" />
-  <input class="account__input" type="text" placeholder="Ім’я" />
-  <input class="account__input" type="text" placeholder="По-батькові" />
-  <input class="account__input" type="text" placeholder="Факультет" />
-  <input class="account__input" type="text" placeholder="Логін" />
-  <input class="account__input" type="text" placeholder="Пароль" />
-  <button class="account__button">Зберегри</button>
+    {% for field in form %}
+            <div>
+                <div>
+                    {{ field.errors }}
+                </div>
+                {{ field }}
+            </div>
+        {% endfor %}
+      <div class="account__input">{{user.faculty}}</div>
+  <button type="submit" class="account__button">Зберегри</button>
+  </form>
 </div>
+{% endblock section %}

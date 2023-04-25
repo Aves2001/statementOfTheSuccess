@@ -1,4 +1,34 @@
 {% extends 'main/base.html' %}
-{% block section %}
-
+{% block section %}{% load static %}
+<!---------------------------------- таблиця відомості успішності студентів ---------------------------------->
+<div class="table">
+  <div class="table__head">
+    <div>№<br />Відомості</div>
+    <div>Дата</div>
+    <div>Группа</div>
+    <div>Загальна кількість годин</div>
+    <div>Семестр</div>
+    <div>Дисципліна</div>
+    <div>Викладач</div>
+  </div>
+  <form method="post">{% csrf_token %}
+  <div class="table__body">
+    <div class="table__row">
+      <div class="table__check"></div>
+      <div class="table__component">
+        <div>{{ form.record_number }}</div>
+        <div>{{ form.date }}</div>
+        <div>{{ form.group }}</div>
+        <div>{{ form.total_hours }}</div>
+        <div>{{ form.semester }}</div>
+        <div>{{ form.discipline }}</div>
+        <div>{{ form.teacher }}</div>
+      </div>
+    </div>
+    <div class="table__buttons">
+      <button type="submit" class="button">Створити</button>
+    </div>
+  </div>
+  </form>
+</div>
 {% endblock section %}

@@ -1,8 +1,9 @@
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm, SetPasswordForm
 from django.forms import ModelForm, ModelMultipleChoiceField
-from .models import Teacher, Group
+from .models import Teacher, Group, Grade, Record
 
 
 class TeacherCreationForm(UserCreationForm):
@@ -63,3 +64,46 @@ class UserLoginForm(AuthenticationForm):
     class Meta:
         model = Teacher
         fields = ['username', 'password']
+
+
+class ProfileForm(forms.ModelForm):
+    last_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'account__input',
+                                                              'type': "text",
+                                                              'placeholder': 'Прізвище',
+                                                              }))
+    first_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'account__input',
+                                                               'type': "text",
+                                                               'placeholder': 'Ім`я',
+                                                               }))
+    middle_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'account__input',
+                                                                'type': "text",
+                                                                'placeholder': 'По батькові',
+                                                                }))
+
+    class Meta:
+        model = Teacher
+        fields = ['last_name', 'first_name', 'middle_name', 'academic_status']
+
+        widgets = {
+            'academic_status': forms.TextInput(attrs={
+                'class': 'account__input',
+                'placeholder': 'Академічний статус',
+            }),
+        }
+
+
+class AddRecordForm(forms.ModelForm):
+    class Meta:
+        model = Record
+        fields = ['record_number', 'group', 'date', 'semester', 'total_hours', 'discipline', 'teacher']
+
+        widgets = {
+            'record_number': forms.NumberInput(attrs={
+                'placeholder': 'Номер',
+            }),
+            'date': forms.SelectDateWidget(attrs={
+                'placeholder': 'Дата',
+            }),
+            'group': forms.Select(),
+            'discipline': forms.Select(),
+        }

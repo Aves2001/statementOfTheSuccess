@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from .managers import UserManager
-from .services import current_year, max_value_current_year
+from .services import current_year, max_value_current_year, get_grade_ECTS_and_5
 
 
 class Faculty(models.Model):
@@ -103,8 +103,8 @@ class Student(BaseUser):
 
 
 class GroupStudent(models.Model):
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name="Група")
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, verbose_name="Студент")
 
     class Meta:
         verbose_name = verbose_name_plural = 'Групи-Студенти'
@@ -125,7 +125,7 @@ class Teacher(AbstractBaseUser, PermissionsMixin, BaseUser):
     is_active = models.BooleanField(default=True, verbose_name='Активний профіль')
 
     academic_status = models.CharField(null=True, blank=True, max_length=100, verbose_name="Академічний статус")
-    faculty = models.ForeignKey(Faculty, null=True, on_delete=models.SET_NULL)
+    faculty = models.ForeignKey(Faculty, null=True, on_delete=models.SET_NULL, verbose_name="Факультет")
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['last_name', 'first_name', 'middle_name']
@@ -145,6 +145,15 @@ class Teacher(AbstractBaseUser, PermissionsMixin, BaseUser):
 
     def email_user(self, subject, message, from_email=None, **kwargs):
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+    def get_absolute_url(self):
+        return f'/profile/'
+
+    def is_curator(self):
+        if self.groups.filter(name='Деканат').exists():
+            return True
+        else:
+            return False
 
     def __str__(self):
         full_name = self.get_full_name()
@@ -228,12 +237,14 @@ class Record(models.Model):
     def get_record_number(self):
         return f"{str(self.year)[-2:]}/{self.record_number}"
 
+    def get_record_detail(self):
+        return f"№ {self.get_record_number()} | {self.teacher} | {self.discipline}"
+
     def get_absolute_url(self):
         return reverse('record-detail', kwargs={'pk': self.pk})
 
     def __str__(self):
-        record_number = self.get_record_number()
-        return f"№ {record_number} | {self.teacher} | {self.discipline}"
+        return self.get_record_number()
 
     get_record_number.short_description = str(record_number.verbose_name)
 
@@ -247,9 +258,26 @@ class Grade(models.Model):
                                              verbose_name="Оцінка")
     grade_date = models.DateField(verbose_name="Дата виставлення оцінки")
 
+    def grade_ECTS(self):
+        return get_grade_ECTS_and_5(self.grade)
+
+    def grade_5(self):
+        return get_grade_ECTS_and_5(self.grade, 5)
+
+    def get_group(self):
+        return self.group_student.group
+
+    def get_student(self):
+        return self.group_student.student
+
+    get_group.short_description = "Група"
+    get_student.short_description = "Студент"
+    grade_ECTS.short_description = f"{grade.verbose_name} [ECTS]"
+    grade_5.short_description = f"{grade.verbose_name} [5]"
+
     class Meta:
         verbose_name = 'Оцінка'
         verbose_name_plural = 'Оцінки'
 
     def __str__(self):
-        return f"{self.record} | {self.group_student} | {self.grade}"
+        return str(self.record)

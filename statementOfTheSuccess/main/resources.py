@@ -1,7 +1,7 @@
 from import_export import fields, resources
 from import_export.widgets import ForeignKeyWidget
 
-from .models import Student, Speciality, Faculty, Discipline, Teacher
+from .models import Student, Speciality, Faculty, Discipline, Teacher, Record, Grade
 
 
 class BaseNameMixin(resources.ModelResource):
@@ -81,3 +81,98 @@ class DisciplineResource(resources.ModelResource):
         exclude = ['id', ]
         export_order = ['teacher', 'name', 'semester_control_form']
         import_id_fields = ['name', ]
+
+
+class RecordResource(resources.ModelResource):
+    get_record_number = fields.Field(
+        column_name='Номер_відомості',
+        attribute='get_record_number')
+
+    def dehydrate_get_record_number(self, record):
+        return record.get_record_number()
+
+    group = fields.Field(
+        column_name='Група',
+        attribute='group')
+
+    def dehydrate_group(self, record):
+        return record.group
+
+    date = fields.Field(
+        column_name='Дата',
+        attribute='date')
+
+    discipline = fields.Field(
+        column_name='Дисципліна',
+        attribute='discipline')
+
+    def dehydrate_discipline(self, record):
+        return record.discipline
+
+    semester = fields.Field(
+        column_name='Семестр',
+        attribute='semester')
+
+    total_hours = fields.Field(
+        column_name='Загальна_кількість_годин',
+        attribute='total_hours')
+
+    teacher = fields.Field(
+        column_name='Викладач',
+        attribute='teacher')
+
+    def dehydrate_teacher(self, record):
+        return record.teacher
+
+    is_closed = fields.Field(
+        column_name='Відомість_закрита',
+        attribute='is_closed')
+
+    class Meta:
+        model = Record
+        exclude = ['id', 'record_number', 'year']
+        export_order = ['get_record_number', 'group', 'date', 'discipline',
+                        'semester', 'total_hours', 'teacher', 'is_closed']
+        import_id_fields = ['get_record_number', ]
+
+
+class GradeResource(resources.ModelResource):
+    record = fields.Field(
+        column_name='Відомість',
+        attribute='record')
+
+    def dehydrate_record(self, grade):
+        return grade.record.get_record_number()
+
+    group = fields.Field(
+        column_name='Група',
+        attribute='group')
+
+    def dehydrate_group(self, grade):
+        return grade.group_student.group.get_name_group()
+
+    student = fields.Field(
+        column_name='Студент',
+        attribute='student')
+
+    def dehydrate_student(self, grade):
+        return grade.group_student.student
+
+    individual_study_plan_number = fields.Field(
+        column_name='Номер_індивідуального_навчального_плану',
+        attribute='individual_study_plan_number')
+
+    grade = fields.Field(
+        column_name='Оцінка',
+        attribute='grade')
+
+    grade_date = fields.Field(
+        column_name='Дата_виставлення_оцінки',
+        attribute='grade_date')
+
+    class Meta:
+        model = Grade
+        exclude = ['id', 'group_student']
+        export_order = ['record', 'group', 'student', 'individual_study_plan_number',
+                        'grade', 'grade_date']
+        import_id_fields = ['record', ]
