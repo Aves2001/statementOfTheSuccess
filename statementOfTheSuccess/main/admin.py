@@ -5,9 +5,10 @@ from import_export.admin import ImportExportMixin
 from import_export.formats import base_formats
 
 from .forms import TeacherCreationForm, TeacherChangeForm, GroupAdminForm
-from .models import Faculty, Speciality, Group, Student, Teacher, GroupStudent, Discipline, Grade, Record, \
-    SemesterControlForm
-from .resources import StudentResource, DisciplineResource, TeacherResource, RecordResource, GradeResource
+from .models import Faculty, Speciality, Group, Student, Teacher, Discipline, Grade, Record, \
+    SemesterControlForm, GroupStudent
+from .resources import StudentResource, DisciplineResource, TeacherResource, RecordResource, GradeResource, \
+    GroupConfirmImportForm, GroupImportForm
 
 admin.site.index_title = "Буковинський Університет"
 
@@ -114,16 +115,39 @@ class DisciplineAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 @admin.register(Student)
 class StudentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('number_of_the_scorebook', 'last_name', 'first_name', 'middle_name', 'admission_year')
+    list_display = ('number_of_the_scorebook', 'last_name', 'first_name', 'middle_name',
+                    'admission_year', 'group_list_field_display')
     list_filter = ('admission_year', )
     search_fields = ('last_name', 'first_name')
     ordering = ('number_of_the_scorebook', )
     model = Student
     resource_classes = [StudentResource]
+    import_form_class = GroupImportForm
+    confirm_form_class = GroupConfirmImportForm
+
+    def group_list_field_display(self, student):
+        return ", ".join([str(group_student.group.get_name_group())
+                          for group_student in GroupStudent.objects
+                         .filter(student=student).order_by('group').all()])
+
+    group_list_field_display.short_description = "ГРУПИ"
+
+    def get_confirm_form_initial(self, request, import_form):
+        initial = super().get_confirm_form_initial(request, import_form)
+        if import_form:
+            initial['group'] = import_form.cleaned_data['group']
+        return initial
+
+    def get_import_data_kwargs(self, request, *args, **kwargs):
+        form = kwargs.get('form')
+        if form:
+            print(form.cleaned_data['group'])
+            return form.cleaned_data
+        return {}
 
 
 @admin.register(GroupStudent)
-class StudentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+class GroupStudentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('group', 'student', )
     list_filter = ('group', )
     search_fields = ('group', 'student')

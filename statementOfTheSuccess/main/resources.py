@@ -1,7 +1,9 @@
+from django import forms
 from import_export import fields, resources
+from import_export.forms import ImportForm, ConfirmImportForm
 from import_export.widgets import ForeignKeyWidget
 
-from .models import Student, Speciality, Faculty, Discipline, Teacher, Record, Grade
+from .models import Student, Faculty, Discipline, Teacher, Record, Grade, Group, GroupStudent
 
 
 class BaseNameMixin(resources.ModelResource):
@@ -39,6 +41,18 @@ class TeacherResource(BaseNameMixin, resources.ModelResource):
         exclude = ['id', ]
         import_id_fields = ['email', ]
 
+# TODO
+class GroupImportForm(ImportForm):
+    group = forms.ModelChoiceField(
+        queryset=Group.objects.all(),
+        required=True)
+
+
+class GroupConfirmImportForm(ConfirmImportForm):
+    group = forms.ModelChoiceField(
+        queryset=Group.objects.all(),
+        required=True)
+
 
 class StudentResource(BaseNameMixin):
     number_of_the_scorebook = fields.Field(
@@ -54,6 +68,16 @@ class StudentResource(BaseNameMixin):
         exclude = ['id', ]
         export_order = ['number_of_the_scorebook', 'last_name', 'first_name', 'middle_name', 'admission_year']
         import_id_fields = ['number_of_the_scorebook', ]
+
+    def after_import(self, dataset, result, using_transactions, dry_run, **kwargs):
+        if not dry_run:
+            for i in dataset:
+                group = kwargs['group']
+                student = Student.objects.filter(number_of_the_scorebook=i[0]).get()
+                obj, created = GroupStudent.objects.update_or_create(
+                    group=group,
+                    student=student,
+                )
 
 
 class DisciplineResource(resources.ModelResource):
