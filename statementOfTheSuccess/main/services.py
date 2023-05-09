@@ -21,6 +21,8 @@ def max_value_current_year(value):
 
 
 def get_grade_ECTS_and_5(grade, system_grane="ECTS"):
+    if not grade:
+        return ""
     rezult: tuple
     if 90 <= grade <= 100:
         rezult = "A", "5"
