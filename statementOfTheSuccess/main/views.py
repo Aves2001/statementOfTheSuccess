@@ -1,12 +1,14 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
+from django.contrib.auth.views import LoginView, LogoutView
 from django.db.models import Q
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import FormView, UpdateView, CreateView
+from django.utils.html import escape
+from django.views.generic import UpdateView, TemplateView
 from django.views.generic.list import ListView
+from django_datatables_view.base_datatable_view import BaseDatatableView
 
-from .forms import UserLoginForm, ProfileForm, AddRecordForm
+from .forms import UserLoginForm, ProfileForm
 from .models import Record, Grade, Teacher
 
 
@@ -26,24 +28,52 @@ def index(request):
     return render(request, 'main/index.html')
 
 
-class RecordList(LoginRequiredMixin, ListView):
-    model = Record
+class RecordList(LoginRequiredMixin, TemplateView):
     template_name = 'main/record.html'
-    context_object_name = 'record'
     extra_context = {'title': 'Відомості'}
 
-    # TODO права
-    def get_queryset(self):
+
+
+class RecordListJson(LoginRequiredMixin, BaseDatatableView):
+    model = Record
+    columns = ['record_number', 'date', 'group', 'total_hours', 'discipline', 'teacher']
+
+    def get_initial_queryset(self):
         if self.request.user.groups.filter(name='Деканат').exists():
-            return Record.objects\
+            return Record.objects \
                 .filter(Q(group__speciality__faculty=self.request.user.faculty),
                         Q(is_closed=True) |
-                        Q(teacher=self.request.user.pk))\
+                        Q(teacher=self.request.user.pk)) \
                 .order_by('-record_number')
         if self.request.user.groups.filter(name='Викладачі').exists():
-            return Record.objects\
-                .filter(teacher=self.request.user.pk)\
+            return Record.objects \
+                .filter(teacher=self.request.user.pk) \
                 .order_by('-record_number')
+
+    def filter_queryset(self, qs):
+        search = self.request.GET.get('search[value]', None)
+        if search:
+            qs = qs.filter(
+                Q(record_number=search) |
+                Q(discipline=search)
+            )
+        return qs
+
+    def prepare_results(self, qs):
+        data = []
+
+        for item in qs:
+            item_data = {
+                'id': escape(item.pk,),
+                'record_number': escape(item.get_record_number(),),
+                'date': escape(item.date,),
+                'name_group': escape(item.group.get_name_group(),),
+                'total_hours': escape(item.total_hours,),
+                'discipline': escape(str(item.discipline),),
+                'teacher': escape(str(item.teacher),)
+            }
+            data.append(item_data)
+        return data
 
 
 class RecordDetail(LoginRequiredMixin, ListView):
@@ -69,9 +99,7 @@ class RecordDetail(LoginRequiredMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class AddRecord(LoginRequiredMixin, CreateView):
-    model = Record
-    form_class = AddRecordForm
+class AddRecord(LoginRequiredMixin, TemplateView):
     template_name = 'main/add-record.html'
     extra_context = {'title': 'Створити відомість'}
 
@@ -80,6 +108,10 @@ class AddRecord(LoginRequiredMixin, CreateView):
             return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
 
+
+class AddRecordListJson(RecordListJson):
+    def get_initial_queryset(self):
+        return Record.objects.all()
 
 class Profile(LoginRequiredMixin, UpdateView):
     model = Teacher

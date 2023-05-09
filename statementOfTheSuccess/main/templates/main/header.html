@@ -16,7 +16,7 @@
             {% if user.is_authenticated %}
             	<li><a href="{% url 'record' %}">перегляд відомостей</a></li>
               {% if user.is_curator %}
-                <li hidden ><a href="{% url 'add-record' %}">додати нову відомість</a></li>
+                <li><a href="{% url 'add-record' %}">додати нову відомість</a></li>
               {% endif %}
                 <li><a href="{% url 'profile' %}">профіль</a></li>
                 <li><a href="{% url 'logout' %}">Вийти</a></li>
