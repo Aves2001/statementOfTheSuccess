@@ -9,29 +9,27 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-import environ
-from pathlib import Path
+import os
 
-env = environ.Env(
-    # set casting, default value
-    DEBUG=(bool, False)
-)
+from dotenv import load_dotenv, get_key
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+ENV_FILE = Path.joinpath(BASE_DIR, '.env')
 
-environ.Env.read_env(Path.joinpath(BASE_DIR, '.env'))
+load_dotenv(ENV_FILE)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = get_key(ENV_FILE, 'SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
-
-ALLOWED_HOSTS = []
+DEBUG = bool(get_key(ENV_FILE, 'DEBUG'))
+# DEBUG = False
+ALLOWED_HOSTS = ['127.0.0.1', ]
 
 
 # Application definition
@@ -45,7 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'import_export',
-    'django_datatables_view',
+    # 'django_datatables_view',
+    'rest_framework',
+    'rest_framework_datatables_editor',
 
     'main',
 ]
@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'statementOfTheSuccess.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'mydatabase.db',
+        'NAME': f"{get_key(ENV_FILE, 'DB_NAME')}.db",
     }
 }
 
@@ -126,7 +126,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
+# STATIC_URL = 'static/'
+STATIC_ROOT = 'static/'
+
 STATIC_URL = 'static/'
+
+st = os.path.join(BASE_DIR, 'main', 'static')
+print(st)
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'main', 'static'),
+)
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -138,6 +149,19 @@ AUTH_USER_MODEL = 'main.Teacher'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = LOGIN_URL = 'login'
 
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+        'rest_framework_datatables_editor.renderers.DatatablesRenderer',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'rest_framework_datatables_editor.filters.DatatablesFilterBackend',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework_datatables_editor.pagination.DatatablesPageNumberPagination',
+    'PAGE_SIZE': 50,
+}
+
 if DEBUG:
     MIDDLEWARE += [
         'debug_toolbar.middleware.DebugToolbarMiddleware',
@@ -145,7 +169,7 @@ if DEBUG:
     INSTALLED_APPS += [
         'debug_toolbar',
     ]
-    INTERNAL_IPS = ['127.0.0.1', ]
+    INTERNAL_IPS = ['127.0.0.1', '10.1.3.122', ]
 
     import mimetypes
     mimetypes .add_type("application/javascript", ".js", True)

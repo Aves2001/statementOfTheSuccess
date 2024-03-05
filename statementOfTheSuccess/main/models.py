@@ -3,6 +3,8 @@ from django.contrib.auth.models import PermissionsMixin
 from django.core.mail import send_mail
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -86,8 +88,8 @@ class BaseUser(models.Model):
 
 class Student(BaseUser):
     number_of_the_scorebook = models.PositiveIntegerField(unique=True,
-                                                          null=False,
-                                                          blank=False,
+                                                          null=True,
+                                                          blank=True,
                                                           verbose_name='Номер залікової книжки')
     admission_year = models.PositiveSmallIntegerField(null=True,
                                                       blank=True,
@@ -254,9 +256,12 @@ class Grade(models.Model):
     group_student = models.ForeignKey(GroupStudent, on_delete=models.CASCADE, verbose_name="Студент")
     individual_study_plan_number = models.PositiveIntegerField(null=True, blank=True,
                                                                verbose_name="Номер індивідуального навчального плану")
-    grade = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)],
+    grade = models.PositiveSmallIntegerField(null=True, blank=True,
+                                             # validators=[MinValueValidator(1), MaxValueValidator(100)],
                                              verbose_name="Оцінка")
-    grade_date = models.DateField(verbose_name="Дата виставлення оцінки")
+    grade_date = models.DateField(null=True, blank=True,
+                                  default=timezone.now,
+                                  verbose_name="Дата виставлення оцінки")
 
     def grade_ECTS(self):
         return get_grade_ECTS_and_5(self.grade)
@@ -281,3 +286,11 @@ class Grade(models.Model):
 
     def __str__(self):
         return str(self.record)
+
+
+@receiver(pre_save, sender=Grade)
+def update_grade_date(sender, instance, **kwargs):
+    # Перевірка, чи запис не новий, тобто оновлюється існуючий
+    if instance.pk:
+        # Оновлення grade_date до поточної дати та часу
+        instance.grade_date = timezone.now()

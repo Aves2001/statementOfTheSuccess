@@ -105,5 +105,10 @@ class AddRecordForm(forms.ModelForm):
                 'placeholder': 'Дата',
             }),
             'group': forms.Select(),
-            'discipline': forms.Select(),
+            'discipline': forms.Select(attrs={
+                'id': 'discipline_select',
+            }),
+            'teacher': forms.Select(attrs={
+                'id': 'teacher_select',
+            }),
         }

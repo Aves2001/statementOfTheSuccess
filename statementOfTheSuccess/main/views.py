@@ -1,15 +1,120 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.html import escape
 from django.views.generic import UpdateView, TemplateView
-from django.views.generic.list import ListView
 from django_datatables_view.base_datatable_view import BaseDatatableView
+from rest_framework import viewsets, generics
+from rest_framework.permissions import IsAuthenticated
 
 from .forms import UserLoginForm, ProfileForm
-from .models import Record, Grade, Teacher
+from .models import Record, Grade, Teacher, Discipline, GroupStudent
+from .serializers import RecordSerializer, GradeSerializer
+
+
+class RecordListAPI(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RecordSerializer
+
+    def get_queryset(self):
+        if self.request.user.groups.filter(name='Деканат').exists():
+            return Record.objects \
+                .filter(
+                Q(group__speciality__faculty=self.request.user.faculty),
+                Q(is_closed=True) |
+                Q(teacher=self.request.user.pk)
+            ) \
+                .order_by('-record_number')
+        if self.request.user.groups.filter(name='Викладачі').exists():
+            return Record.objects \
+                .filter(teacher=self.request.user.pk) \
+                .order_by('-record_number')
+
+    # def list(self, request, **kwargs):
+
+
+class RecordDetailListAPI(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = GradeSerializer
+
+    def get_queryset(self):
+        # Отримайте URL-шлях з запиту
+        url_path = self.request.path
+        # Розбийте URL-шлях по символу "/" і виберіть останній елемент
+        record_id = url_path.split('/')[-1]
+
+        print('qqqqq')
+        print(record_id)
+        # Перевірте, чи передано id відомості
+        if record_id:
+            # Отримайте відомість за заданим id
+            try:
+                record = Record.objects.get(pk=record_id)
+            except Record.DoesNotExist:
+                return Grade.objects.none()  # Поверніть порожній queryset, якщо відомість не знайдено
+
+            # Перевірте, чи користувач має доступ до цієї відомості (якщо потрібно)
+            if not record.is_accessible_to_user(self.request.user):
+                return Grade.objects.none()  # Поверніть порожній queryset, якщо користувач не має доступу
+
+            # Поверніть оцінки, прив'язані до цієї відомості
+            return record.grades.all()  # Припустимо, що у вас є зв'язок "grades" на моделі Record, який посилається на оцінки
+        else:
+            return Grade.objects.none()  # Поверніть порожній queryset, якщо id відомості не передано
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['record_id'] = self.request.GET.get('id')
+        return context
+
+
+# class RecordDetailListAPI(viewsets.ModelViewSet):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = GradeSerializer
+#
+#     def get_queryset(self):
+#         record_id = self.request.query_params.get('record_id')
+#         if record_id:
+#             if self.request.user.groups.filter(name='Деканат').exists() or \
+#                     self.request.user.groups.filter(name='Викладачі').exists():
+#                 return Grade.objects.filter(record=record_id)
+#         else:
+#             # TODO
+#             return ""
+
+
+# @method_decorator(csrf_exempt, name='dispatch')
+# class YourModelTableView(SingleTableView):
+#     model = Grade
+#     table_class = EditableGradeTable
+#     template_name = 'main/record-detail.html'
+#
+#     def get_data(self):
+#         queryset = Grade.objects.all()
+#         data = [{'pk': obj.pk, 'name': obj.name, 'description': obj.description} for obj in queryset]
+#         return data
+#
+#     def post(self, request, *args, **kwargs):
+#         data = json.loads(request.body)
+#         Grade.objects.create(name=data['name'], description=data['description'])
+#         return JsonResponse({'status': 'ok'})
+#
+#     def put(self, request, *args, **kwargs):
+#         data = json.loads(request.body)
+#         instance = Grade.objects.get(pk=data['pk'])
+#         instance.name = data['name']
+#         instance.description = data['description']
+#         instance.save()
+#         return JsonResponse({'status': 'ok'})
+#
+#     def delete(self, request, *args, **kwargs):
+#         data = json.loads(request.body)
+#         instance = Grade.objects.get(pk=data['pk'])
+#         instance.delete()
+#         return JsonResponse({'status': 'ok'})
 
 
 class LoginUser(LoginView):
@@ -31,7 +136,6 @@ def index(request):
 class RecordList(LoginRequiredMixin, TemplateView):
     template_name = 'main/record.html'
     extra_context = {'title': 'Відомості'}
-
 
 
 class RecordListJson(LoginRequiredMixin, BaseDatatableView):
@@ -64,32 +168,25 @@ class RecordListJson(LoginRequiredMixin, BaseDatatableView):
 
         for item in qs:
             item_data = {
-                'id': escape(item.pk,),
-                'record_number': escape(item.get_record_number(),),
-                'date': escape(item.date,),
-                'name_group': escape(item.group.get_name_group(),),
-                'total_hours': escape(item.total_hours,),
-                'discipline': escape(str(item.discipline),),
-                'teacher': escape(str(item.teacher),)
+                'id': escape(item.pk, ),
+                'record_number': escape(item.get_record_number(), ),
+                'date': escape(item.date, ),
+                'name_group': escape(item.group.get_name_group(), ),
+                'total_hours': escape(item.total_hours, ),
+                'discipline': escape(str(item.discipline), ),
+                'teacher': escape(str(item.teacher), )
             }
             data.append(item_data)
         return data
 
 
-class RecordDetail(LoginRequiredMixin, ListView):
-    model = Grade
+class RecordDetail(LoginRequiredMixin, TemplateView):
     template_name = 'main/record-detail.html'
-    context_object_name = 'grade'
     extra_context = {'title': 'Відомість'}
-
-    def get_queryset(self):
-        if self.request.user.groups.filter(name='Деканат').exists() or \
-                self.request.user.groups.filter(name='Викладачі').exists():
-            return Grade.objects.filter(record=self.kwargs['pk'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['record'] = Record.objects.filter(pk=self.kwargs['pk'])
+        context['record'] = Record.objects.filter(pk=self.kwargs['pk'])[0]
         return context
 
     def dispatch(self, request, *args, **kwargs):
@@ -113,6 +210,7 @@ class AddRecordListJson(RecordListJson):
     def get_initial_queryset(self):
         return Record.objects.all()
 
+
 class Profile(LoginRequiredMixin, UpdateView):
     model = Teacher
     form_class = ProfileForm
@@ -121,3 +219,9 @@ class Profile(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user
+
+
+def get_teacher_for_discipline(request, discipline_id):
+    discipline = Discipline.objects.get(pk=discipline_id)
+    teacher_id = discipline.teacher.id
+    return JsonResponse({'teacher_id': teacher_id})

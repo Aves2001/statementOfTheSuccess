@@ -1,4 +1,67 @@
 {% extends 'main/base.html' %}
-{% block section %}
-{% include "main/table2.html" %}
+{% block section %}{% csrf_token %}
+
+<div class="conteiner">
+    <table id="record-detail" class="table table-dark table-hover table-bordered border-primary" style="width:100%">
+        <thead>
+            <tr>
+                <th>№<br />з/п</th>
+                <th>Прізвище та ініціали студента</th>
+                <th>№ індивідуального <br> навчального плану</th>
+                <th>Оцінка (ECTS)</th>
+                <th>Оцінка (100)</th>
+                <th>Оцінка (5)</th>
+                <th>Дата</th>
+
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+<div>
+</div>
+
+<script>
+$(function() {
+    var record_id = window.location.href.split('/').pop();
+
+    var $table = $('#record-detail');
+
+    $table.DataTable({
+        dom: 'Pfrtip',
+        ajax: {
+            url: "/api/RecordDetailListAPI/?format=datatables&record_id=" + record_id,
+            type: "GET"
+        },
+        searchPanes: {
+            searchable: true,
+            columns: [1,],
+            initCollapsed: true,
+            layout: 'columns-4',
+            cascadePanes: true,
+        },
+        debug: true,
+        columnDefs: [{
+            searchPanes: { show: true },
+            targets: [0, 1, 2, 3, 4, 5, 6],
+        }],
+        columns: [
+            { data: 'id' },
+            { data: 'student.full_name' },
+            { data: 'individual_study_plan_number' },
+            { data: 'grade_ECTS' },
+            { data: 'grade' },
+            { data: 'grade_5' },
+            { data: 'grade_date' }
+        ],
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/uk.json' },
+    });
+
+    $table.on('click', 'tbody tr', function() {
+        window.location.href = $(this).data('href');
+    });
+});
+
+</script>
+
 {% endblock section %}

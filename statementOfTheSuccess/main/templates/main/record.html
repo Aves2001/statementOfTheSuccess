@@ -4,7 +4,7 @@
     <table id="record-list" class="table table-dark table-hover table-bordered border-primary" style="width:100%">
         <thead>
             <tr>
-                <th>№ Відомості</th>
+                <th data-data="record_number">№ Відомості</th>
                 <th>Дата</th>
                 <th>Группа</th>
                 <th>Загальна кількість годин</th>
@@ -16,70 +16,47 @@
         </tbody>
     </table>
 </div>
+
 <script>
-<!--var editor;-->
-<!--function getCookie(name) {-->
-<!--    let cookieValue = null;-->
-<!--    if (document.cookie && document.cookie !== '') {-->
-<!--        const cookies = document.cookie.split(';');-->
-<!--        for (let i = 0; i < cookies.length; i++) {-->
-<!--            const cookie = cookies[i].trim();-->
-<!--            // Does this cookie string begin with the name we want?-->
-<!--            if (cookie.substring(0, name.length + 1) === (name + '=')) {-->
-<!--                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));-->
-<!--                break;-->
-<!--            }-->
-<!--        }-->
-<!--    }-->
-<!--    return cookieValue;-->
+$(function() {
+    var $table = $('#record-list');
 
-$(document).ready(function() {
-<!--    editor = new $.fn.dataTable.Editor( {-->
-<!--        ajax: "{% url 'RecordListJson' %}",-->
-<!--        headers: {'X-CSRFToken': getCookie('csrftoken')},-->
-<!--        table: "#record-list",-->
-<!--        fields: [ {-->
-<!--                label: "record_number:",-->
-<!--                name: "record_number"-->
-<!--            },-->
-<!--        ]-->
-<!--    } );-->
-
-
-    $('#record-list').DataTable( {
-<!--        dom: 'Pfrtip',-->
+    $table.DataTable({
+        dom: 'Pfrtip',
         ajax: {
-            url: "{% url 'RecordListJson' %}",
-<!--           type: "POST"-->
+            url: "/api/RecordListAPI/?format=datatables",
+            type: "GET"
         },
+        searchPanes: {
+            searchable: true,
+            columns: [0, 2, 4, 5],
+            initCollapsed: true,
+            layout: 'columns-4',
+            cascadePanes: true,
+        },
+        debug: true,
+        columnDefs: [{
+            searchPanes: { show: true },
+            targets: [0, 2, 4, 5],
+        }],
         columns: [
-                    {"data": 'record_number'},
-                    {"data": 'date'},
-                    {"data": 'name_group'},
-                    {"data": 'total_hours'},
-                    {"data": 'discipline'},
-                    {"data": 'teacher'}
-                ],
-<!--        searchPanes: {-->
-<!--            viewTotal: true,-->
-<!--            columns: ['record_number', 'date', 'group', 'total_hours', 'discipline', 'teacher']-->
-<!--        },-->
-<!--        columnDefs:[{-->
-<!--            searchPanes:{-->
-<!--                show: true,-->
-
-<!--            },-->
-<!--            targets: [0, 1, 2, 3],-->
-<!--        }],-->
-            'language': {
-                    'url': '//cdn.datatables.net/plug-ins/1.13.4/i18n/uk.json',
-            },
-        serverSide: true
-    } );
-
-    $('#record-list').on('click', 'tbody tr', function() {
-                window.location.href = $(this).data('href');
+            { data: 'record_number' },
+            { data: 'date' },
+            { data: 'group.get_name_group' },
+            { data: 'total_hours' },
+            { data: 'discipline.name' },
+            { data: 'teacher.get_full_name' }
+        ],
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/uk.json' },
+        rowCallback: function(row, data, index) {
+            $(row).attr('data-href', '/record-detal/' + data.id);
+        }
     });
-} );
+
+    $table.on('click', 'tbody tr', function() {
+        window.location.href = $(this).data('href');
+    });
+});
+
 </script>
 {% endblock section %}
