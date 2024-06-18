@@ -1,63 +1,74 @@
-<div class="document">
-  <div class="document__text">
-    <u>Приватний Вищий Навчальний Заклад «Буковинський університет»</u>
-  </div>
-  <div class="document__text">факультет <u>Інформаційних технологій та економіки</u></div>
-  <div class="document__text">напрям підготовки (спеціальність) «Комп'ютерні науки»</div>
-  <div class="document__text" style="text-align: end">Курс 1 Группа Км-501</div>
-  <div>
-    <div class="document__head">
-      <div class="document__title">ВІДОМІСТЬ ОБЛІКУ УСПІШНОСТІ №_____</div>
-      <div class="document__text2">❞___❝__________________20___року</div>
-      <div class="document__text2">
-        з______________________________________________________________________________________________
-      </div>
-      <div class="document__text3">(назва навчальної дисципліни)</div>
-      <div class="document__text2">
-        за___навчальний семестр. Форма семестрового контролю______________. Загальна кількість годин
-        ___
-      </div>
-      <div class="document__text2">
-        Викладач___________________________________________________________________________
-      </div>
-      <div class="document__text3">
-        (вчене звання, прізвище та ініціали викладача, який виставляє підсумкову оцінку)
-      </div>
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Відомість обліку успішності № {{ record.get_record_number }}</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            margin: 2em;
+        }
+        .header, .footer {
+            text-align: center;
+            margin: 10px 0;
+        }
+        .record-detail {
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 5px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Відомість обліку успішності № {{ record.get_record_number }}</h1>
+        <p>Факультет: Інформаційних технологій та економіки</p>
+        <p>Напрям підготовки (спеціальність): Комп'ютерні науки</p>
+        <p>Курс 3 Група {{ record.group.get_name_group }}</p>
+        <p>Назва навчальної дисципліни: {{ record.discipline }}</p>
+        <p>Семестр: {{ record.semester }}</p>
+        <p>Загальна кількість годин: {{ record.total_hours }}</p>
+        <p>Викладач: {{ record.teacher.get_full_name }}</p>
     </div>
-    <table class="document__body">
-      <tr>
-        <th rowspan="2">№<br />з/п</th>
-        <th rowspan="2">Прізвище та ініціали студента</th>
-        <th rowspan="2">
-          № індивідуального<br />
-          навчального плану
-        </th>
-        <th colspan="3">Оцінка</th>
-        <th rowspan="2">Дата</th>
-        <th rowspan="2">Підпис<br />викладача</th>
-      </tr>
-      <tr>
-        <th>
-          за національною<br />
-          шкалою
-        </th>
-        <th>
-          кількість<br />
-          балів за 100<br />
-          бальною шкалою
-        </th>
-        <th>ECTS</th>
-      </tr>
-      <tr>
-        <td>1.</td>
-        <td>Бензар Олександр Олександрович</td>
-        <td></td>
-        <td>4</td>
-        <td>76</td>
-        <td>С</td>
-        <td></td>
-        <td></td>
-      </tr>
+    <table>
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Прізвище та ініціали студента</th>
+                <th>Індивідуальний план</th>
+                <th>Національна шкала</th>
+                <th>Кількість балів</th>
+                <th>Дата</th>
+                <th>Підпис викладача</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grade in record.grade_set.all %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ grade.get_student }}</td>
+                <td>{{ grade.individual_study_plan_number }}</td>
+                <td>{{ grade.grade_ECTS }}</td>
+                <td>{{ grade.grade }}</td>
+                <td>{{ grade.grade_date }}</td>
+                <td>{{ record.teacher.get_short_name }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-  </div>
-</div>
+    <div class="footer">
+        <p>Декан факультету: ___________________ (підпис)</p>
+        <p>Екзаменатор (викладач): _______________ (підпис)</p>
+    </div>
+</body>
+</html>

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     # 'django_datatables_view',
     'rest_framework',
     'rest_framework_datatables_editor',
+    'easy_pdf',
 
     'main',
 ]

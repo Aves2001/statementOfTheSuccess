@@ -119,7 +119,6 @@ class GroupStudent(models.Model):
 
 
 class Teacher(AbstractBaseUser, PermissionsMixin, BaseUser):
-    # todo
     email = models.EmailField(_('Електронна почта'), unique=True)
     date_joined = models.DateTimeField(_('Дата приєднання'), auto_now_add=True)
 

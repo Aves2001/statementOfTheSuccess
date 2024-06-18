@@ -101,10 +101,10 @@ class RecordAdmin(ImportExportModelAdmin):
                     'semester', 'total_hours', 'teacher', 'is_closed')
     fieldsets = (
         (None, {'fields': ('record_number', 'group', 'date', 'year', 'discipline',
-                           'semester', 'total_hours', 'teacher')}),
+                           'semester', 'total_hours', 'teacher', 'is_closed')}),
     )
     readonly_fields = ['record_number', 'group', 'date', 'year', 'discipline',
-                       'semester', 'total_hours', 'teacher', 'is_closed']
+                       'semester', 'total_hours', 'teacher', ]
     inlines = [GradeInline, ]
     resource_classes = [RecordResource]
 
@@ -136,16 +136,18 @@ class RecordAdmin(ImportExportModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
 
-        # Отримати список студентів для вибраної групи
-        group_students = GroupStudent.objects.filter(group=obj.group)
-        # Створити екземпляр Grade для кожного студента у групі
-        for group_student in group_students:
-            print(group_student)
-            Grade.objects.create(
-                record=obj,
-                group_student=group_student,
-                # Додайте інші необхідні поля Grade тут, наприклад, grade_date
-            )
+        # Виконувати лише під час створення нового запису
+        if not change:
+            # Отримати список студентів для вибраної групи
+            group_students = GroupStudent.objects.filter(group=obj.group)
+            # Створити екземпляр Grade для кожного студента у групі
+            for group_student in group_students:
+                print(group_student)
+                Grade.objects.create(
+                    record=obj,
+                    group_student=group_student,
+                    # Додайте інші необхідні поля Grade тут, наприклад, grade_date
+                )
 
     class Media:
         js = (
