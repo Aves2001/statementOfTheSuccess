@@ -7,15 +7,16 @@ from pathlib import Path
 from getpass import getpass
 from string import ascii_letters, digits
 from random import choice
-from dotenv import dotenv_values, set_key
 
 try:
     is_Module_Not_Found = False
     import click
+    from dotenv import dotenv_values, set_key
 except ModuleNotFoundError:
     is_Module_Not_Found = True
-    subprocess.run(["pip", "install", "click"])
+    subprocess.run(["pip", "install", "click", "python-dotenv"])
     import click
+    from dotenv import dotenv_values, set_key
 
 PATH_MANAGE = "manage.py"
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -167,10 +168,15 @@ def setup_django_project():
         if click.confirm("Бажаєте запустити сервер?", default=True):
             start_server()
 
+def start_server_LAN():
+    start_server(True)
 
-def start_server():
+def start_server(LAN=False, IP="0.0.0.0", PORT="8080"):
+    IPandPORT = ""
+    if LAN:
+        IPandPORT = str(IP) + ":" + str(PORT)
     click.echo("Запуск сервера...")
-    subprocess.run([sys.executable, PATH_MANAGE, "runserver"], check=True)
+    subprocess.run([sys.executable, PATH_MANAGE, "runserver", IPandPORT], check=True)
 
 
 def edit_env_file():
@@ -229,7 +235,8 @@ def test():
 
 def setup_menu():
     main_menu = Menu()
-    main_menu.add_menu_item("Запустити сервер", start_server)
+    main_menu.add_menu_item("Запустити сервер LOCAL", start_server)
+    main_menu.add_menu_item("Запустити сервер LAN", start_server_LAN)
     main_menu.add_menu_item("Встановити залежності", install_dependencies)
     main_menu.add_menu_item("Редагувати файл .env", edit_env_file)
     main_menu.add_menu_item("Виконати міграції", run_migrations)

@@ -25,7 +25,11 @@ $(function() {
         dom: 'Pfrtip',
         ajax: {
             url: "/api/RecordListAPI/?format=datatables",
-            type: "GET"
+            type: "GET",
+            error: function() {
+                // Якщо сталася помилка під час завантаження даних
+                alert('Не вдалося завантажити дані.');
+            }
         },
         searchPanes: {
             searchable: true,
@@ -47,15 +51,19 @@ $(function() {
             { data: 'discipline.name' },
             { data: 'teacher.get_full_name' }
         ],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/uk.json' },
+        language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/uk.json' },
         rowCallback: function(row, data, index) {
             $(row).attr('data-href', '/record-detal/' + data.id);
         }
     });
 
-    $table.on('click', 'tbody tr', function() {
-        window.location.href = $(this).data('href');
-    });
+$table.on('click', 'tbody tr', function() {
+    const href = $(this).data('href'); // Отримуємо data-href з рядка
+        if (href) {
+            window.open(href, '_blank');
+        }
+});
+
 });
 
 </script>

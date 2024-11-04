@@ -29,8 +29,15 @@ SECRET_KEY = get_key(ENV_FILE, 'SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(get_key(ENV_FILE, 'DEBUG'))
 # DEBUG = False
-ALLOWED_HOSTS = ['127.0.0.1', ]
 
+ALLOWED_HOSTS = ['*']
+if not DEBUG:
+    ALLOWED_HOSTS = ['10.1.3.129', 'localhost', '127.0.0.1']
+
+# Шлях до папки з медіафайлами на диску
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# URL, через який будуть доступні медіафайли
+MEDIA_URL = '/media/'
 
 # Application definition
 
@@ -43,10 +50,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'import_export',
-    # 'django_datatables_view',
     'rest_framework',
     'rest_framework_datatables_editor',
-    'easy_pdf',
 
     'main',
 ]
@@ -96,20 +101,20 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+# AUTH_PASSWORD_VALIDATORS = [
+#     {
+#         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+#     },
+#     {
+#         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+#     },
+#     {
+#         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+#     },
+#     {
+#         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+#     },
+# ]
 
 
 # Internationalization
@@ -170,7 +175,6 @@ if DEBUG:
     INSTALLED_APPS += [
         'debug_toolbar',
     ]
-    INTERNAL_IPS = ['127.0.0.1', '10.1.3.122', ]
 
     import mimetypes
     mimetypes .add_type("application/javascript", ".js", True)

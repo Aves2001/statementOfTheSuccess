@@ -4,71 +4,121 @@
     <meta charset="UTF-8">
     <title>Відомість обліку успішності № {{ record.get_record_number }}</title>
     <style>
+        @font-face {
+            font-family: 'TimesNewRomanPSMT';
+            src: url('/static/timesnewromanpsmt.ttf') format('truetype');
+        }
         body {
-            font-family: 'Times New Roman', Times, serif;
-            margin: 2em;
+            font-family: 'TimesNewRomanPSMT', Times, serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f5;
         }
-        .header, .footer {
+        .container {
+            width: 210mm;
+            height: 297mm;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: white;
+        }
+        .header p {
+            margin: 0;
+            text-align: left;
+            padding-left: 1.25cm;
+        }
+        .header .center {
             text-align: center;
-            margin: 10px 0;
         }
-        .record-detail {
+        .header .right {
+            text-align: right;
+            padding-right: 1.25cm;
+        }
+        .info-section, .footer {
             margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+        }
+        h2, .header h2 {
+            text-align: center;
+            margin: 0;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table, th, td {
-            border: 1px solid black;
+            font-size: 10px;
+            text-align: center;
+            margin-top: 10px;
         }
         th, td {
-            padding: 5px;
-            text-align: center;
+            border: 1px solid black;
+            padding: 4px;
+        }
+        thead { display: table-header-group; }
+        tfoot { display: table-footer-group; }
+        tr { page-break-inside: avoid; }
+        .page-break {
+            page-break-after: always;
         }
     </style>
+    <script>
+        window.onload = function() {
+            window.print();
+        };
+    </script>
 </head>
 <body>
-    <div class="header">
-        <h1>Відомість обліку успішності № {{ record.get_record_number }}</h1>
-        <p>Факультет: Інформаційних технологій та економіки</p>
-        <p>Напрям підготовки (спеціальність): Комп'ютерні науки</p>
-        <p>Курс 3 Група {{ record.group.get_name_group }}</p>
-        <p>Назва навчальної дисципліни: {{ record.discipline }}</p>
-        <p>Семестр: {{ record.semester }}</p>
-        <p>Загальна кількість годин: {{ record.total_hours }}</p>
-        <p>Викладач: {{ record.teacher.get_full_name }}</p>
-    </div>
-    <table>
-        <thead>
-            <tr>
-                <th>№</th>
-                <th>Прізвище та ініціали студента</th>
-                <th>Індивідуальний план</th>
-                <th>Національна шкала</th>
-                <th>Кількість балів</th>
-                <th>Дата</th>
-                <th>Підпис викладача</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for grade in record.grade_set.all %}
-            <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ grade.get_student }}</td>
-                <td>{{ grade.individual_study_plan_number }}</td>
-                <td>{{ grade.grade_ECTS }}</td>
-                <td>{{ grade.grade }}</td>
-                <td>{{ grade.grade_date }}</td>
-                <td>{{ record.teacher.get_short_name }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <div class="footer">
-        <p>Декан факультету: ___________________ (підпис)</p>
-        <p>Екзаменатор (викладач): _______________ (підпис)</p>
+    <div class="container">
+        <div class="header">
+            <p>Приватний Вищий Навчальний Заклад «Буковинський університет»</p>
+            <p>Факультет: {{ record.teacher.faculty.name }}</p>
+            <p>Напрям підготовки (спеціальність): {{ record.group.speciality }}</p>
+            <p class="right">Курс: {{ record.group.course }} | Група: {{ record.group.get_name_group }}</p>
+            <h2>ВІДОМІСТЬ ОБЛІКУ УСПІШНОСТІ № {{ record.get_record_number }}</h2>
+            <p class="center">{{ record.date|date:"d.m.Y" }} року</p>
+            <p class="center">з {{ record.discipline.name }} </p>
+            <p class="center">за {{ record.semester }} навчальний семестр</p>
+            <p class="center">Форма семестрового контролю: {{ record.discipline.semester_control_form }}</p>
+            <p class="center">Загальна кількість годин: {{ record.total_hours }}</p>
+            <p class="center">Викладач: {{ record.teacher.get_academic_status }} {{ record.teacher.get_full_name }}</p>
+        </div>
+
+        {% for page in pages %}
+        <table>
+            <thead>
+                <tr>
+                    <th>№ з/п</th>
+                    <th>Прізвище та ініціали студента</th>
+                    <th>№ індивідуального навчального плану</th>
+                    <th>Оцінка за національною шкалою</th>
+                    <th>Кількість балів за 100-бальною шкалою</th>
+                    <th>Оцінка ECTS</th>
+                    <th>Дата виставлення оцінки</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grade in page %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ grade.get_student }}</td>
+                    <td>{{ grade.get_individual_study_plan_number }}</td>
+                    <td>{{ grade.grade_5 }}</td>
+                    <td>{{ grade.grade }}</td>
+                    <td>{{ grade.grade_ECTS }}</td>
+                    <td>{{ grade.grade_date|date:"d.m.Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if not forloop.last %}
+            <div class="page-break"></div>
+        {% endif %}
+        {% endfor %}
+
+        <div class="footer">
+            <p>Декан факультету: ___________________ (підпис)</p>
+            <p>Екзаменатор: _______________ (підпис)</p>
+        </div>
     </div>
 </body>
 </html>

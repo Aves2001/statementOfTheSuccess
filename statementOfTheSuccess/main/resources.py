@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from import_export import fields, resources, widgets
 from import_export.forms import ImportForm, ConfirmImportForm
 from import_export.widgets import ForeignKeyWidget
@@ -41,6 +42,7 @@ class TeacherResource(BaseNameMixin, resources.ModelResource):
         fields = export_order = ['email', 'last_name', 'first_name', 'middle_name', 'academic_status', 'faculty']
         exclude = ['id', ]
         import_id_fields = ['email', ]
+
 
 # TODO
 class GroupImportForm(ImportForm):
@@ -86,37 +88,83 @@ class StudentResource(BaseNameMixin):
 
 
 class DisciplineResource(resources.ModelResource):
-    # TODO залишити фіо одним полем чи розбити
+    # Поле для викладача
     teacher = fields.Field(
         column_name='Викладач',
         attribute='teacher')
 
-    def dehydrate_teacher(self, discipline):
-        return discipline.teacher
-
+    # Поле для назви дисципліни
     name = fields.Field(
         column_name='Дисципліна',
         attribute='name')
 
+    # Поле для форми семестрового контролю
     semester_control_form = fields.Field(
-        column_name='Форма семестроого контролю',
-        attribute='semester_control_form')
-
-    def dehydrate_semester_control_form(self, discipline):
-        return discipline.semester_control_form
+        column_name='Форма семестрового контролю',
+        attribute='semester_control_form',
+        widget=ForeignKeyWidget(SemesterControlForm,
+                                'semester_control_form'))  # Використовуємо поле для пошуку форми контролю
 
     class Meta:
         model = Discipline
         exclude = ['id', ]
-        export_order = ['teacher', 'name', 'semester_control_form']
         import_id_fields = ['name', ]
+        export_order = ['teacher', 'name', 'semester_control_form']
+
+    def dehydrate_teacher(self, discipline):
+        # Повертаємо повне ім'я викладача
+        return discipline.teacher.get_full_name() if discipline.teacher else ''
+
+    def before_import_row(self, row, **kwargs):
+        # Очищаємо пробіли перед імпортом
+        row['Викладач'] = row['Викладач'].strip()
+        row['Дисципліна'] = row['Дисципліна'].strip()
+        row['Форма семестрового контролю'] = row['Форма семестрового контролю'].strip()
+
+        # Знайти або створити викладача
+        teacher_name = row['Викладач']
+        print(teacher_name)
+        if teacher_name:
+            # Розділімо ім'я на складові
+            name_parts = teacher_name.split()
+
+            # Переконаємося, що у нас є принаймні три частини імені
+            if len(name_parts) >= 3:
+                last_name = name_parts[0]
+                first_name = name_parts[1]
+                middle_name = name_parts[2]  # З'єднуємо решту частин для по батькові
+
+                # Використовуємо filter для перевірки існування викладача
+                teacher_queryset = Teacher.objects.filter(
+                    last_name=last_name,
+                    first_name=first_name,
+                    middle_name=middle_name
+                )
+
+                if teacher_queryset.exists():
+                    teacher = teacher_queryset.first()  # Отримуємо перший знайдений викладача
+                    row['Викладач'] = teacher  # Призначаємо викладача для рядка
+                    print(f"Викладач знайдений: {teacher.get_full_name()}")
+                else:
+                    print("Викладач не знайдений.")
+            else:
+                print("Неправильний формат імені викладача.")
+
+        # Знайти або створити форму семестрового контролю
+        form_name = row['Форма семестрового контролю']
+        print(form_name)
+        if form_name:
+            semester_form, created = SemesterControlForm.objects.get_or_create(
+                semester_control_form=form_name
+            )
+            row['Форма семестрового контролю'] = semester_form  # Призначити форму контролю для рядка
 
 
 class ConcatWidget(widgets.Widget):
     def __init__(self, fields, separator='-'):
+        super().__init__()
         self.fields = fields
         self.separator = separator
-
 
     def clean(self, value, row=None, *args, **kwargs):
         print(value)
@@ -124,80 +172,60 @@ class ConcatWidget(widgets.Widget):
 
 
 class GroupResource(resources.ModelResource):
-    # group_letter = fields.Field(
-    #     column_name='',
-    #     attribute='group_letter',
-    # )
-    # number_group = fields.Field(
-    #     column_name='',
-    #     attribute='number_group',
-    # )
+    group_letter = fields.Field(
+        column_name='Буква групи',  # Ви можете вказати тут заголовок з файлу, якщо потрібно
+        attribute='group_letter',
+    )
 
-    group = fields.Field(
-        # attribute='group_letter',
-        column_name='Групи',
-        # widget=ConcatWidget(['group_letter', 'number_group'], separator='-')
+    number_group = fields.Field(
+        column_name='Номер групи',  # Ви можете вказати тут заголовок з файлу, якщо потрібно
+        attribute='number_group',
     )
 
     course = fields.Field(
         column_name='Курс',
-        attribute='course')
+        attribute='course'
+    )
 
     start_year = fields.Field(
         column_name='З якого року',
-        attribute='start_year')
+        attribute='start_year'
+    )
 
     end_year = fields.Field(
         column_name='По який рік',
-        attribute='end_year')
+        attribute='end_year'
+    )
 
     speciality = fields.Field(
-        column_name='Cпеціальність',
+        column_name='Спеціальність',
         attribute='speciality',
         widget=ForeignKeyWidget(Speciality, 'name')
-    ),
+    )
 
     class Meta:
         model = Group
+        import_id_fields = ['group_letter', 'number_group', 'start_year', 'end_year']
+        fields = ['group_letter', 'number_group', 'course', 'start_year', 'end_year', 'speciality']
         exclude = ['id', ]
-        fields = ['group', 'course', 'start_year', 'end_year', 'speciality']
-        # export_order = ['group_letter', 'number_group', 'group', 'course', 'start_year', 'end_year', 'speciality']
-        import_id_fields = ['group_letter', 'number_group']
-        # skip_unchanged = ('group_letter',)
 
-    def dehydrate_group(self, group):
-        return f'{group.group_letter}-{group.number_group}'
-
-    def before_import_row(self, row, **kwargs):
-        print(row)
-        group = row.get('Група')
-        if group:
-            group_letter, number_group = group.split('-')
-            row['group_letter'] = group_letter.strip()
-            row['number_group'] = number_group.strip()
-
-    def before_export(self, queryset, *args, **kwargs):
-        for obj in queryset:
-            obj.group = f'{obj.group_letter}-{obj.number_group}'
-
-    def after_export(self, queryset, data, *args, **kwargs):
-        for obj in queryset:
-            obj.group = None
-    # TODO група
-    # def get_import_fields(self):
-    #     import_fields = super().get_import_fields()
-    #     print(import_fields)
-    #     unwanted_fields = ['group_letter', 'number_group']
-    #     import_fields = [field for field in import_fields if field.attribute not in unwanted_fields]
-    #     print(import_fields)
-    #     print("*" * 50)
-    #     return import_fields
-    #
     # def before_import_row(self, row, **kwargs):
-    #     group = str(row.get('Група', ''))
-    #     group_letter, number_group = group.split("-")
-    #     row['group_letter'] = group_letter.strip()
-    #     row['number_group'] = number_group.strip()
+    #     # Отримання значення групи
+    #     group = row.get('Група')
+    #     if group:
+    #         # Розділення на літеру групи та номер
+    #         try:
+    #             group_letter, number_group = group.split('-')
+    #             row['group_letter'] = group_letter.strip()  # Зберігаємо літеру групи
+    #             row['number_group'] = number_group.strip()  # Зберігаємо номер групи
+    #
+    #             # Перевірка на унікальність комбінації group_letter та number_group
+    #             if Group.objects.filter(group_letter=row['group_letter'], number_group=row['number_group']).exists():
+    #                 raise ValidationError(f"Група {row['group_letter']}-{row['number_group']} вже існує.")
+    #         except ValueError:
+    #             raise ValidationError("Некоректний формат для поля 'Група'. Очікується 'літера-групи-номер'.")
+    #     else:
+    #         raise ValidationError("Поле 'Група' є обов'язковим.")
 
 
 class SpecialityResource(resources.ModelResource):

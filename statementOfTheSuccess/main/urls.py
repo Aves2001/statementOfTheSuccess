@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.urls import include, path, re_path
 from rest_framework import routers
+from django.conf import settings
+from django.conf.urls.static import static
 
 from . import views
 from .views import get_teacher_for_discipline
@@ -25,5 +27,6 @@ urlpatterns = [
     path('get_teacher_for_discipline/<int:discipline_id>/', get_teacher_for_discipline,
          name='get_teacher_for_discipline'),
     # path('record/<int:pk>/pdf/', RecordPDFView.as_view(), name='record_pdf'),
-    # path('record/<int:pk>/redirect/', RedirectToAdmin.as_view(), name='redirect_to_admin'),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

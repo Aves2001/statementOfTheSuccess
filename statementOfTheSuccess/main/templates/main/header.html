@@ -8,25 +8,32 @@
       </div> -->
     </div>
     <div class="header__body">
-      <div class="header__top"><img src="{% static 'main/img/headerText.png' %}" alt="text" />
-      </div>
-      <div class="header__bottom">
-        <nav class="header__menu">
-          <ul class="header__list">
-            {% if user.is_authenticated %}
-            	<li><a href="{% url 'record' %}">перегляд відомостей</a></li>
-              {% if user.is_curator %}
-                <li><a href="/admin/main/record/add/">додати нову відомість</a></li>
-              {% endif %}
-                <li><a href="{% url 'profile' %}">профіль</a></li>
-                <li><a href="{% url 'logout' %}">Вийти</a></li>
-          	{% else %}
-                <li><a href="{% url 'login' %}">Увійти</a></li>
-          	{% endif %}
-          </ul>
-        </nav>
-      </div>
-    </div>
+  <div class="header__top"><img src="{% static 'main/img/headerText.png' %}" alt="text" />
+  </div>
+  <div class="header__bottom">
+    <nav class="header__menu">
+      <ul class="header__list">
+        {% if user.is_authenticated %}
+          <li><a href="{% url 'record' %}">перегляд відомостей</a></li>
+          {% if user.is_curator %}
+            <li><a href="/admin/main/record/add/">додати нову відомість</a></li>
+          {% endif %}
+          <li><a href="{% url 'profile' %}">профіль</a></li>
+
+          <!-- Додаємо перевірку на суперкористувача (адміністратора) -->
+          {% if user.is_superuser %}
+            <li><a href="/admin/">Адміністрування</a></li>
+          {% endif %}
+
+          <li><a href="{% url 'logout' %}">Вийти</a></li>
+        {% else %}
+          <li><a href="{% url 'login' %}">Увійти</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+</div>
+
   </div>
 </header>
 {% endblock header %}

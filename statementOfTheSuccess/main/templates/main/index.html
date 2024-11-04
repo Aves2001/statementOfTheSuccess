@@ -1,1 +1,65 @@
 {% extends 'main/base.html' %}
+{% block section %}
+    <style>
+        /* Центрування блоку section з меншим відступом вгорі */
+        .profile.section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 450px); /* Зменшуємо загальну висоту на 50px для відступу */
+            margin: 0;
+        }
+
+        /* Контейнер для горизонтального розміщення банерів */
+        .banners-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Стиль для кожного банера */
+        .banner {
+            width: 300px;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            text-decoration: none;
+            background-color: #003366; /* Темно-синій */
+            color: #ffcc00; /* Золотий */
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Ефект при наведенні */
+        .banner:hover {
+            background-color: #cc9900; /* Золотий */
+            color: #003366; /* Темно-синій при наведенні */
+        }
+
+        /* Заголовок банера */
+        .banner h2 {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        /* Текст для заклику до дії */
+        .banner p {
+            font-size: 14px;
+            color: #ffdd99; /* Світлий відтінок золотого */
+        }
+    </style>
+
+    <div class="banners-container">
+        <a href="https://bukuniver.edu.ua/" class="banner" target="_blank">
+            <h2>ПВНЗ Буковинський університет</h2>
+            <p>Перейти на сайт</p>
+        </a>
+        <a href="http://exams.bukuniver.edu.ua/" class="banner" target="_blank">
+            <h2>Тестування знань студента</h2>
+            <p>Дізнайтесь більше</p>
+        </a>
+        <a href="http://education.bukuniver.edu.ua/" class="banner" target="_blank">
+            <h2>Дистанційне навчання</h2>
+            <p>Розпочати навчання</p>
+        </a>
+    </div>
+{% endblock section %}

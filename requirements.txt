@@ -8,3 +8,4 @@ setuptools==65.5.1
 xhtml2pdf==0.2.16
 django-import-export
 djangorestframework-datatables-editor
+openpyxl

@@ -31,7 +31,11 @@ $(function() {
         dom: 'Pfrtip',
         ajax: {
             url: "/api/RecordDetailListAPI/?format=datatables&record_id=" + record_id,
-            type: "GET"
+            type: "GET",
+            error: function() {
+                // Якщо сталася помилка під час завантаження даних
+                alert('Не вдалося завантажити дані.');
+            }
         },
         searchPanes: {
             searchable: true,
@@ -54,11 +58,15 @@ $(function() {
             { data: 'grade_5' },
             { data: 'grade_date' }
         ],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/uk.json' },
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/uk.json', emptyTable: "Дані відсутні" },
     });
 
     $table.on('click', 'tbody tr', function() {
-        window.location.href = $(this).data('href');
+        if (dataTable.data().count() > 0) {
+            window.location.href = $(this).data('href');
+        } else {
+            alert('Дані відсутні для перегляду.');
+        }
     });
 });
 

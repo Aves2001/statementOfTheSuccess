@@ -43,12 +43,18 @@ class Speciality(models.Model):
 class Group(models.Model):
     # todo
     group_letter = models.CharField(max_length=3,
-                                    verbose_name="Літера групи")
-    number_group = models.PositiveSmallIntegerField(verbose_name="Номер групи")
+                                    verbose_name="Літера групи",
+                                    null=False,
+                                    blank=False, )
+    number_group = models.PositiveSmallIntegerField(verbose_name="Номер групи",
+                                                    null=False,
+                                                    blank=False, )
 
     course = models.PositiveSmallIntegerField(verbose_name="Курс",
                                               default=1,
-                                              validators=[MinValueValidator(1), MaxValueValidator(10)])
+                                              validators=[MinValueValidator(1), MaxValueValidator(10)],
+                                              null=False,
+                                              blank=False, )
     start_year = models.PositiveSmallIntegerField(default=current_year(),
                                                   validators=[MinValueValidator(1995), max_value_current_year],
                                                   verbose_name="З якого року")
@@ -122,7 +128,7 @@ class Teacher(AbstractBaseUser, PermissionsMixin, BaseUser):
     email = models.EmailField(_('Електронна почта'), unique=True)
     date_joined = models.DateTimeField(_('Дата приєднання'), auto_now_add=True)
 
-    is_staff = models.BooleanField(default=False, verbose_name='Доступ до адмінки')
+    is_staff = models.BooleanField(default=True, verbose_name='Доступ до редагування')
     is_active = models.BooleanField(default=True, verbose_name='Активний профіль')
 
     academic_status = models.CharField(null=True, blank=True, max_length=100, verbose_name="Академічний статус")
@@ -143,6 +149,9 @@ class Teacher(AbstractBaseUser, PermissionsMixin, BaseUser):
 
     def get_short_name(self):
         return f"{self.last_name} {str(self.first_name)[0]}. {str(self.middle_name)[0]}."
+
+    def get_academic_status(self):
+        return self.academic_status if self.academic_status else ""
 
     def email_user(self, subject, message, from_email=None, **kwargs):
         send_mail(subject, message, from_email, [self.email], **kwargs)
@@ -256,11 +265,14 @@ class Grade(models.Model):
     individual_study_plan_number = models.PositiveIntegerField(null=True, blank=True,
                                                                verbose_name="Номер індивідуального навчального плану")
     grade = models.PositiveSmallIntegerField(null=True, blank=True,
-                                             # validators=[MinValueValidator(1), MaxValueValidator(100)],
+                                             validators=[MinValueValidator(0), MaxValueValidator(100)],
                                              verbose_name="Оцінка")
     grade_date = models.DateField(null=True, blank=True,
                                   default=timezone.now,
                                   verbose_name="Дата виставлення оцінки")
+
+    def get_individual_study_plan_number(self):
+        return self.individual_study_plan_number if self.individual_study_plan_number else ""
 
     def grade_ECTS(self):
         return get_grade_ECTS_and_5(self.grade)

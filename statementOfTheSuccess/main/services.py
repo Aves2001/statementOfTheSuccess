@@ -1,6 +1,9 @@
 import datetime
+import os
 
 from django.core.validators import MaxValueValidator
+
+from statementOfTheSuccess import settings
 
 
 def current_today():
@@ -48,3 +51,23 @@ def get_grade_ECTS_and_5(grade, system_grane="ECTS"):
             return rezult[1]
     except:
         return None
+
+def fetch_pdf_resources(uri, rel):
+    # Перевірка, чи є URI абсолютним посиланням
+    if uri.startswith("http"):
+        return uri
+
+    # Шлях для медіафайлів
+    if settings.MEDIA_URL in uri:
+        path = os.path.join(settings.MEDIA_ROOT, uri.replace(settings.MEDIA_URL, ''))
+    # Шлях для статичних файлів
+    elif settings.STATIC_URL in uri:
+        path = os.path.join(settings.STATIC_ROOT, uri.replace(settings.STATIC_URL, ''))
+    else:
+        # Повернення None, якщо URI не відповідає жодному відомому шаблону
+        path = None
+
+    # Перевірка існування шляху
+    if path and os.path.isfile(path):
+        return path
+    return None

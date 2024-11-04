@@ -10,7 +10,6 @@ from django.urls import reverse_lazy
 from django.utils.html import escape
 from django.views import View
 from django.views.generic import UpdateView, TemplateView
-# from django_datatables_view.base_datatable_view import BaseDatatableView
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from xhtml2pdf import pisa
@@ -18,7 +17,8 @@ from xhtml2pdf import pisa
 from .forms import UserLoginForm, ProfileForm
 from .models import Record, Grade, Teacher, Discipline
 from .serializers import RecordSerializer, GradeSerializer
-
+from .services import fetch_pdf_resources
+from statementOfTheSuccess import settings
 
 
 class RecordListAPI(viewsets.ModelViewSet):
@@ -30,8 +30,8 @@ class RecordListAPI(viewsets.ModelViewSet):
             return Record.objects \
                 .filter(
                 Q(group__speciality__faculty=self.request.user.faculty),
-                Q(is_closed=True) |
-                Q(teacher=self.request.user.pk)
+                # Q(is_closed=True) |
+                # Q(teacher=self.request.user.pk)
             ) \
                 .order_by('-record_number')
         if self.request.user.groups.filter(name='Викладачі').exists():
@@ -143,6 +143,7 @@ class RecordList(LoginRequiredMixin, TemplateView):
     template_name = 'main/record.html'
     extra_context = {'title': 'Відомості'}
 
+
 #
 # class RecordListJson(LoginRequiredMixin, BaseDatatableView):
 #     model = Record
@@ -201,6 +202,7 @@ class RecordDetail(LoginRequiredMixin, TemplateView):
                 return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
 
+
 #
 # class AddRecord(LoginRequiredMixin, TemplateView):
 #     template_name = 'main/add-record.html'
@@ -236,37 +238,41 @@ def get_teacher_for_discipline(request, discipline_id):
 class RedirectToAdmin(View):
     def get(self, request, pk):
         record = Record.objects.get(pk=pk)
+        pdf_path = os.path.join(settings.MEDIA_ROOT, f"record_{pk}.pdf")
 
         if record.is_closed:
-            # Генерація PDF
-            template_path = 'main/document.html'
-            context = {'record': record}
+            # Перевірка існування PDF-файлу
+            if os.path.exists(pdf_path):
+                # Якщо файл існує, повертаємо посилання для відкриття в новій вкладці
+                return redirect(f'/media/record_{pk}.pdf')
 
-            # Створення HTML з шаблону
+            # Якщо файл не існує, створюємо PDF
+            rows_per_page = 20
+            grades = list(record.grade_set.all())
+            pages = [grades[i:i + rows_per_page] for i in range(0, len(grades), rows_per_page)]
+
+            context = {
+                'record': record,
+                'pages': pages,
+            }
+
+            template_path = 'main/document.html'
             html = render_to_string(template_path, context, request=request)
             return HttpResponse(html)
 
-            # Ім'я файлу PDF
-            pdf_file_path = f'record_{pk}.pdf'
+            result = BytesIO()
 
-            # Перевірка чи існує файл
-            if os.path.exists(pdf_file_path):
-                with open(pdf_file_path, 'rb') as pdf_file:
-                    response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-                    response['Content-Disposition'] = f'inline; filename=record_{pk}.pdf'
-                return response
-            else:
-                # Створення PDF
-                result = open(pdf_file_path, 'wb')
-                # pdf = pisa.pisaDocument(BytesIO(html.encode('UTF-8')), dest=result)
-                pdf = pisa.CreatePDF(BytesIO(html.encode('UTF-8')), dest=result, encoding='UTF-8')
+            # Створення PDF
+            pdf = pisa.pisaDocument(BytesIO(html.encode('UTF-8')), result, encoding='utf-8', link_callback=fetch_pdf_resources)
+            if pdf.err:
+                return HttpResponse('Error generating PDF', status=500)
 
-                if not pdf.err:
-                    with open(pdf_file_path, 'rb') as pdf_file:
-                        response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-                        response['Content-Disposition'] = f'inline; filename=record_{pk}.pdf'
-                    return response
-                else:
-                    return HttpResponse('Error generating PDF', status=500)
+            # Збереження PDF у файл
+            with open(pdf_path, 'wb') as pdf_file:
+                pdf_file.write(result.getvalue())
+
+            # Повернення посилання для відкриття нової вкладки
+            return redirect(f'/media/record_{pk}.pdf')
+
         else:
             return redirect(f'/admin/main/record/{pk}/change/')

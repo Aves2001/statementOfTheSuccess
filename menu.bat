@@ -42,7 +42,8 @@ REM Після створення віртуально середовищя, п�
 if %IS_CREATE_VENV%==1 (
     echo Перевірка оновлень для pip...
     "%PYTHON_EXECUTABLE%" -m pip install --upgrade pip
-
+	echo install requirements...
+	"%PYTHON_EXECUTABLE%" -m pip install -r requirements.txt
     echo Запуск скрипта "menu.py"
     "%PYTHON_EXECUTABLE%" "%MENU_SCRIPT%" "--CREATE_VENV"
 ) else (
