@@ -36,15 +36,15 @@ class GradeInline(admin.TabularInline):
     extra = 0
     fields = ['group_student', 'individual_study_plan_number', 'grade_ECTS', 'grade', 'grade_5', 'grade_date']
 
-    # Dynamically control readonly fields
     def get_readonly_fields(self, request, obj=None):
-        # Define fields that should always be readonly
-        always_readonly = ['record', 'group_student', 'individual_study_plan_number', 'grade_date', 'grade_ECTS',
-                           'grade_5']
-        # Only set these fields readonly if obj exists (i.e., when editing an existing object)
-        if obj:
+        # Поля, які завжди повинні залишатися лише для читання
+        always_readonly = ['record', 'group_student', 'individual_study_plan_number', 'grade_date', 'grade_ECTS', 'grade_5']
+
+        # Перевірка, чи користувач у групі "Деканат"
+        if request.user.groups.filter(name="Деканат").exists():
+            return always_readonly if obj is None else ['grade_ECTS', 'grade_5', ]
+        else:
             return always_readonly
-        return []
 
     class Media:
         js = (
@@ -107,7 +107,7 @@ class GroupAdmin(ImportExportModelAdmin):
 class RecordAdmin(ImportExportModelAdmin):
     list_display = ('get_record_number', 'group', 'date', 'discipline',
                     'semester', 'total_hours', 'teacher', 'is_closed')
-    list_filter = ('is_closed',  'teacher')
+    list_filter = ('is_closed', 'teacher')
     fieldsets = (
         (None, {'fields': ('record_number', 'group', 'date', 'year', 'discipline',
                            'semester', 'total_hours', 'teacher', 'is_closed')}),
@@ -122,7 +122,7 @@ class RecordAdmin(ImportExportModelAdmin):
         qs = super().get_queryset(request)
 
         # Фільтруємо записи, якщо користувач не є суперкористувачем
-        if request.user.is_superuser:
+        if request.user.is_superuser or request.user.groups.filter(name="Деканат").exists():
             return qs  # Якщо суперкористувач, показати всі записи
         # Інакше, показати лише записи, що належать поточному користувачу (наприклад, 'teacher')
         return qs.filter(teacher=request.user)
@@ -163,7 +163,7 @@ class RecordAdmin(ImportExportModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         # Надати право редагувати тільки викладачам, які відповідають полю teacher
-        if obj and obj.teacher == request.user:
+        if obj and obj.teacher == request.user or request.user.groups.filter(name="Деканат").exists():
             return True
         # elif request.user.is_superuser:
         #     return True  # Суперкористувач завжди може редагувати
@@ -189,20 +189,20 @@ class GradeAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         (None, {'fields': ('record', 'group_student', 'individual_study_plan_number',
                            'grade_ECTS', 'grade', 'grade_5', 'grade_date')}),
     )
-    readonly_fields = ['record', 'group_student', 'get_group', 'get_student', 'individual_study_plan_number',
-                       'grade_ECTS', 'grade_5', 'grade_date']
+    readonly_fields = ['grade_ECTS', 'grade_5', 'grade_date']
     resource_classes = [GradeResource]
 
     def save_model(self, request, obj, form, change):
         if not obj.pk:
-            obj.grade_ECTS = obj.get_grade_ECTS()
-            obj.grade_5 = obj.get_grade_5()
+            if obj.grade:
+                obj.grade_ECTS = obj.get_grade_ECTS()
+                obj.grade_5 = obj.get_grade_5()
         super().save_model(request, obj, form, change)
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        if obj is None:  # Перевіряємо, чи створюється новий об'єкт
-            form.base_fields['grade'].required = True  # Робимо поле обов'язковим для нових об'єктів
+        # if obj is None:  # Перевіряємо, чи створюється новий об'єкт
+        #     form.base_fields['grade'].required = True  # Робимо поле обов'язковим для нових об'єктів
         return form
 
     def has_module_permission(self, request):

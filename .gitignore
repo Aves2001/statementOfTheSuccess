@@ -130,5 +130,3 @@ dmypy.json
 
 .idea
 *.db
-statementOfTheSuccess/main/migrations/
-!/.run/

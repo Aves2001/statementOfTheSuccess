@@ -87,9 +87,10 @@ class BaseUser(models.Model):
     class Meta:
         abstract = True
 
+    maiden_name = models.CharField(_('Дівоче прізвище'), max_length=50, blank=True, null=True)
     last_name = models.CharField(_('Прізвище'), max_length=50, blank=False, null=False)
     first_name = models.CharField(_("Ім'я"), max_length=50, blank=False, null=False)
-    middle_name = models.CharField(_('По батькові'), max_length=50, blank=False, null=False)
+    middle_name = models.CharField(_('По батькові'), max_length=50, blank=True, null=True)
 
 
 class Student(BaseUser):
